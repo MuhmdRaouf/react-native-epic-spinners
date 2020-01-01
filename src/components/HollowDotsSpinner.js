@@ -1,95 +1,123 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect, useState } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const HollowSpinner = styled.div`
-  height: ${props => props.size}px;
-  width: ${props => 2 * props.size * props.dotsNum}px;
-
-  * {
-    box-sizing: border-box;
-  }
-
-  .dot {
-    width: ${props => props.size}px;
-    height: ${props => props.size}px;
-    margin: 0 calc(${props => props.size}px / 2);
-    border: calc(${props => props.size}px / 5) solid ${props => props.color};
-    border-radius: 50%;
-    float: left;
-    transform: scale(0);
-    animation: hollow-dots-spinner-animation
-      ${props => props.animationDuration}ms ease infinite 0ms;
-  }
-  .dot:nth-child(1) {
-    animation-delay: calc(${props => props.animationDelay}ms * 1);
-  }
-  .dot:nth-child(2) {
-    animation-delay: calc(${props => props.animationDelay}ms * 2);
-  }
-  .dot:nth-child(3) {
-    animation-delay: calc(${props => props.animationDelay}ms * 3);
-  }
-  @keyframes hollow-dots-spinner-animation {
-    50% {
-      transform: scale(1);
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicSpinnersProps = {
+  size?: number,
+  animationDuration?: number,
+  color?: string,
+  style?: ViewStyleProp
 };
 
-const defaultProps = {
+const EpicSpinnersDefaultProps = {
   size: 15,
-  color: '#fff',
-  animationDuration: 1000,
-  className: '',
+  color: 'red',
+  animationDuration: 1000
 };
 
-function generateDots(num) {
-  return Array.from({ length: num }).map((val, index) => (
-    <div key={index} className="dot" />
-  ));
-}
-
-const HollowDotsSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => {
+export const HollowDotsSpinner = (props: EpicSpinnersProps): Element<any> => {
+  const { size, color, animationDuration, style } = props;
   const dotsNum = 3;
   const animationDelay = animationDuration * 0.3;
+  const [leftCircle] = useState(new Animated.Value(0));
+  const [middleCircle] = useState(new Animated.Value(0));
+  const [rightCircle] = useState(new Animated.Value(0));
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      height: size,
+      width: 2 * size * dotsNum
+    },
+    dot: {
+      width: size,
+      height: size,
+      borderColor: color,
+      borderRadius: size * 0.5,
+      borderWidth: size * 0.2,
+      marginRight: size / 0.5,
+      transform: [{ scale: 0 }]
+    }
+  });
+  const animateStyle = {
+    leftCircle: {
+      transform: [
+        {
+          scale: leftCircle.interpolate({
+            inputRange: [0, 1, 1.1, 2],
+            outputRange: [0, 2, 2, 0]
+          })
+        }
+      ],
+      opacity: leftCircle.interpolate({
+        inputRange: [0, 1, 2],
+        outputRange: [1, 1, 0]
+      })
+    },
+    middleCircle: {
+      transform: [
+        {
+          scale: middleCircle.interpolate({
+            inputRange: [0, 1, 1.1, 2],
+            outputRange: [0, 2, 2, 0]
+          })
+        }
+      ],
+      opacity: middleCircle.interpolate({
+        inputRange: [0, 1, 2],
+        outputRange: [1, 1, 0]
+      })
+    },
+    rightCircle: {
+      transform: [
+        {
+          scale: rightCircle.interpolate({
+            inputRange: [0, 1, 1.1, 2],
+            outputRange: [0, 2, 2, 0]
+          })
+        }
+      ],
+      opacity: rightCircle.interpolate({
+        inputRange: [0, 1, 2],
+        outputRange: [1, 1, 0]
+      })
+    }
+  };
+
+  useEffect(() => {
+    Animated.stagger(animationDelay, [
+      Animated.loop(
+        Animated.timing(leftCircle, {
+          toValue: 2,
+          duration: animationDuration,
+          easing: Easing.inOut(Easing.ease)
+        })
+      ),
+      Animated.loop(
+        Animated.timing(middleCircle, {
+          toValue: 2,
+          duration: animationDuration,
+          easing: Easing.inOut(Easing.ease)
+        })
+      ),
+      Animated.loop(
+        Animated.timing(rightCircle, {
+          toValue: 2,
+          duration: animationDuration,
+          easing: Easing.inOut(Easing.ease)
+        })
+      )
+    ]).start();
+  }, [leftCircle, middleCircle, rightCircle, animationDelay, animationDuration]);
 
   return (
-    <HollowSpinner
-      size={size}
-      color={color}
-      animationDuration={animationDuration}
-      className={`hollow-dots-spinner${className ? ' ' + className : ''}`}
-      style={style}
-      dotsNum={dotsNum}
-      animationDelay={animationDelay}
-      {...props}
-    >
-      {generateDots(dotsNum)}
-    </HollowSpinner>
+    <View style={[style, spinnerStyle.container]} {...props}>
+      <Animated.View style={[spinnerStyle.dot, animateStyle.leftCircle]} />
+      <Animated.View style={[spinnerStyle.dot, animateStyle.middleCircle]} />
+      <Animated.View style={[spinnerStyle.dot, animateStyle.rightCircle]} />
+    </View>
   );
 };
 
-HollowDotsSpinner.propTypes = propTypes;
-HollowDotsSpinner.defaultProps = defaultProps;
-
-export default HollowDotsSpinner;
+HollowDotsSpinner.defaultProps = EpicSpinnersDefaultProps;

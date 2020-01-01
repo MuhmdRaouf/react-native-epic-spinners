@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { FulfillingBouncingCircleSpinner } from './src/components/FulfillingBouncingCircleSpinner';
+import { HollowDotsSpinner } from './src/components/HollowDotsSpinner';
 
 const App: () => React$Node = () => {
   const style = StyleSheet.create({
@@ -16,7 +16,7 @@ const App: () => React$Node = () => {
   });
   return (
     <View style={style.container}>
-      <FulfillingBouncingCircleSpinner />
+      <HollowDotsSpinner />
     </View>
   );
 };
