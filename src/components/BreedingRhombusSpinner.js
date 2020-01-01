@@ -1,175 +1,306 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect, useState } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, StyleSheet, View } from 'react-native';
 
-const BreedingSpinner = styled.div`
-  height: ${props => props.size}px;
-  width: ${props => props.size}px;
-  position: relative;
-  transform: rotate(45deg);
-
-  * {
-    box-sizing: border-box;
-  }
-
-  .rhombus {
-    height: calc(${props => props.size}px / 7.5);
-    width: calc(${props => props.size}px / 7.5);
-    animation-duration: ${props => props.animationDuration}ms;
-    top: calc(${props => props.size}px / 2.3077);
-    left: calc(${props => props.size}px / 2.3077);
-    background-color: ${props => props.color};
-    position: absolute;
-    animation-iteration-count: infinite;
-  }
-
-  .rhombus:nth-child(2n + 0) {
-    margin-right: 0;
-  }
-
-  .rhombus.child-1 {
-    animation-name: breeding-rhombus-spinner-animation-child-1;
-    animation-delay: calc(${props => props.delayModifier}ms * 1);
-  }
-
-  .rhombus.child-2 {
-    animation-name: breeding-rhombus-spinner-animation-child-2;
-    animation-delay: calc(${props => props.delayModifier}ms * 2);
-  }
-
-  .rhombus.child-3 {
-    animation-name: breeding-rhombus-spinner-animation-child-3;
-    animation-delay: calc(${props => props.delayModifier}ms * 3);
-  }
-
-  .rhombus.child-4 {
-    animation-name: breeding-rhombus-spinner-animation-child-4;
-    animation-delay: calc(${props => props.delayModifier}ms * 4);
-  }
-
-  .rhombus.child-5 {
-    animation-name: breeding-rhombus-spinner-animation-child-5;
-    animation-delay: calc(${props => props.delayModifier}ms * 5);
-  }
-
-  .rhombus.child-6 {
-    animation-name: breeding-rhombus-spinner-animation-child-6;
-    animation-delay: calc(${props => props.delayModifier}ms * 6);
-  }
-
-  .rhombus.child-7 {
-    animation-name: breeding-rhombus-spinner-animation-child-7;
-    animation-delay: calc(${props => props.delayModifier}ms * 7);
-  }
-
-  .rhombus.child-8 {
-    animation-name: breeding-rhombus-spinner-animation-child-8;
-    animation-delay: calc(${props => props.delayModifier}ms * 8);
-  }
-
-  .rhombus.big {
-    height: calc(${props => props.size}px / 3);
-    width: calc(${props => props.size}px / 3);
-    animation-duration: ${props => props.animationDuration}ms;
-    top: calc(${props => props.size}px / 3);
-    left: calc(${props => props.size}px / 3);
-    background-color: ${props => props.color};
-    animation: breeding-rhombus-spinner-animation-child-big
-      ${props => props.animationDuration} infinite;
-    animation-delay: 0.5s;
-  }
-
-  @keyframes breeding-rhombus-spinner-animation-child-1 {
-    50% {
-      transform: translate(-325%, -325%);
-    }
-  }
-  @keyframes breeding-rhombus-spinner-animation-child-2 {
-    50% {
-      transform: translate(0, -325%);
-    }
-  }
-  @keyframes breeding-rhombus-spinner-animation-child-3 {
-    50% {
-      transform: translate(325%, -325%);
-    }
-  }
-  @keyframes breeding-rhombus-spinner-animation-child-4 {
-    50% {
-      transform: translate(325%, 0);
-    }
-  }
-  @keyframes breeding-rhombus-spinner-animation-child-5 {
-    50% {
-      transform: translate(325%, 325%);
-    }
-  }
-  @keyframes breeding-rhombus-spinner-animation-child-6 {
-    50% {
-      transform: translate(0, 325%);
-    }
-  }
-  @keyframes breeding-rhombus-spinner-animation-child-7 {
-    50% {
-      transform: translate(-325%, 325%);
-    }
-  }
-  @keyframes breeding-rhombus-spinner-animation-child-8 {
-    50% {
-      transform: translate(-325%, 0);
-    }
-  }
-  @keyframes breeding-rhombus-spinner-animation-child-big {
-    50% {
-      transform: scale(0.5);
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicSpinnersProps = {
+  size?: number,
+  color?: string,
+  animationDuration?: number,
+  style?: ViewStyleProp
 };
 
-const defaultProps = {
+const EpicSpinnersDefaultProps = {
   size: 150,
-  color: '#fff',
-  animationDuration: 2000,
-  className: '',
+  color: 'red',
+  animationDuration: 2000
 };
 
-function generateRhombusChildren(num) {
-  return Array.from({ length: num }).map((val, index) => (
-    <div key={index} className={`rhombus child-${index + 1}`} />
-  ));
-}
+export const BreedingRhombusSpinner = (props: EpicSpinnersProps): Element<any> => {
+  const { size, color, animationDuration, style } = props;
+  const axisDirection = {
+    center: 0,
+    positive: size * 0.4,
+    negative: size * -0.4,
+    slowPositive: size * 0.5,
+    slowNegative: size * -0.5
+  };
+  const delayModifier = animationDuration * 0.05;
+  const [smallRhombus1] = useState(new Animated.Value(0));
+  const [smallRhombus2] = useState(new Animated.Value(0));
+  const [smallRhombus3] = useState(new Animated.Value(0));
+  const [smallRhombus4] = useState(new Animated.Value(0));
+  const [smallRhombus5] = useState(new Animated.Value(0));
+  const [smallRhombus6] = useState(new Animated.Value(0));
+  const [smallRhombus7] = useState(new Animated.Value(0));
+  const [smallRhombus8] = useState(new Animated.Value(0));
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size,
+      position: 'relative',
+      transform: [{ rotate: '45deg' }]
+    },
+    rhombus: {
+      height: size / 7.5,
+      width: size / 7.5,
+      top: size / 2.3077,
+      left: size / 2.3077,
+      backgroundColor: color,
+      position: 'absolute'
+    },
+    big: {
+      height: size / 3,
+      width: size / 3,
+      top: size / 3,
+      left: size / 3,
+      backgroundColor: color
+    }
+  });
 
-const BreedingRhombusSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => (
-  <BreedingSpinner
-    size={size}
-    color={color}
-    animationDuration={animationDuration}
-    className={`breeding-rhombus-spinner${className ? ' ' + className : ''}`}
-    style={style}
-    delayModifier={animationDuration * 0.05}
-    {...props}
-  >
-    {generateRhombusChildren(8)}
-    <div className="rhombus big" />
-  </BreedingSpinner>
-);
+  const animateStyle = {
+    smallRhombus1: {
+      transform: [
+        {
+          translateX: smallRhombus1.interpolate({
+            inputRange: [0, 1, 1.8, 2],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.negative,
+              axisDirection.slowNegative,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          translateY: smallRhombus1.interpolate({
+            inputRange: [0, 1, 1.8, 2],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.negative,
+              axisDirection.slowNegative,
+              axisDirection.center
+            ]
+          })
+        }
+      ]
+    },
+    smallRhombus2: {
+      transform: [
+        {
+          translateX: axisDirection.center
+        },
+        {
+          translateY: smallRhombus2.interpolate({
+            inputRange: [0, 1, 1.8, 2],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.negative,
+              axisDirection.slowNegative,
+              axisDirection.center
+            ]
+          })
+        }
+      ]
+    },
+    smallRhombus3: {
+      transform: [
+        {
+          translateX: smallRhombus3.interpolate({
+            inputRange: [0, 1, 1.8, 2],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.positive,
+              axisDirection.slowPositive,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          translateY: smallRhombus3.interpolate({
+            inputRange: [0, 1, 1.8, 2],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.negative,
+              axisDirection.slowNegative,
+              axisDirection.center
+            ]
+          })
+        }
+      ]
+    },
+    smallRhombus4: {
+      transform: [
+        {
+          translateX: smallRhombus4.interpolate({
+            inputRange: [0, 1, 1.8, 2],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.positive,
+              axisDirection.slowPositive,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          translateY: axisDirection.center
+        }
+      ]
+    },
+    smallRhombus5: {
+      transform: [
+        {
+          translateX: smallRhombus5.interpolate({
+            inputRange: [0, 1, 1.8, 2],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.positive,
+              axisDirection.slowPositive,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          translateY: smallRhombus5.interpolate({
+            inputRange: [0, 1, 1.8, 2],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.positive,
+              axisDirection.slowPositive,
+              axisDirection.center
+            ]
+          })
+        }
+      ]
+    },
+    smallRhombus6: {
+      transform: [
+        {
+          translateX: axisDirection.center
+        },
+        {
+          translateY: smallRhombus6.interpolate({
+            inputRange: [0, 1, 1.8, 2],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.positive,
+              axisDirection.slowPositive,
+              axisDirection.center
+            ]
+          })
+        }
+      ]
+    },
+    smallRhombus7: {
+      transform: [
+        {
+          translateX: smallRhombus7.interpolate({
+            inputRange: [0, 1, 1.8, 2],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.negative,
+              axisDirection.slowNegative,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          translateY: smallRhombus7.interpolate({
+            inputRange: [0, 1, 1.8, 2],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.positive,
+              axisDirection.slowPositive,
+              axisDirection.center
+            ]
+          })
+        }
+      ]
+    },
+    smallRhombus8: {
+      transform: [
+        {
+          translateX: smallRhombus8.interpolate({
+            inputRange: [0, 1, 1.8, 2],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.negative,
+              axisDirection.slowNegative,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          translateY: axisDirection.center
+        }
+      ]
+    }
+  };
 
-BreedingRhombusSpinner.propTypes = propTypes;
-BreedingRhombusSpinner.defaultProps = defaultProps;
+  useEffect(() => {
+    Animated.loop(
+      Animated.stagger(delayModifier, [
+        Animated.timing(smallRhombus1, {
+          toValue: 2,
+          duration: animationDuration
+        }),
+        Animated.timing(smallRhombus2, {
+          toValue: 2,
+          duration: animationDuration
+        }),
+        Animated.timing(smallRhombus3, {
+          toValue: 2,
+          duration: animationDuration
+        }),
+        Animated.timing(smallRhombus4, {
+          toValue: 2,
+          duration: animationDuration
+        }),
+        Animated.timing(smallRhombus5, {
+          toValue: 2,
+          duration: animationDuration
+        }),
+        Animated.timing(smallRhombus6, {
+          toValue: 2,
+          duration: animationDuration
+        }),
+        Animated.timing(smallRhombus7, {
+          toValue: 2,
+          duration: animationDuration
+        }),
+        Animated.timing(smallRhombus8, {
+          toValue: 2,
+          duration: animationDuration
+        })
+      ])
+    ).start();
+  }, [
+    animationDuration,
+    delayModifier,
+    smallRhombus1,
+    smallRhombus2,
+    smallRhombus3,
+    smallRhombus4,
+    smallRhombus5,
+    smallRhombus6,
+    smallRhombus7,
+    smallRhombus8
+  ]);
 
-export default BreedingRhombusSpinner;
+  return (
+    <View style={[style, spinnerStyle.container]} {...props}>
+      <Animated.View style={[spinnerStyle.rhombus, animateStyle.smallRhombus1]} />
+      <Animated.View style={[spinnerStyle.rhombus, animateStyle.smallRhombus2]} />
+      <Animated.View style={[spinnerStyle.rhombus, animateStyle.smallRhombus3]} />
+      <Animated.View style={[spinnerStyle.rhombus, animateStyle.smallRhombus4]} />
+      <Animated.View style={[spinnerStyle.rhombus, animateStyle.smallRhombus5]} />
+      <Animated.View style={[spinnerStyle.rhombus, animateStyle.smallRhombus6]} />
+      <Animated.View style={[spinnerStyle.rhombus, animateStyle.smallRhombus7]} />
+      <Animated.View style={[spinnerStyle.rhombus, animateStyle.smallRhombus8]} />
+      <View style={[spinnerStyle.rhombus, spinnerStyle.big]} />
+    </View>
+  );
+};
+
+BreedingRhombusSpinner.defaultProps = EpicSpinnersDefaultProps;
