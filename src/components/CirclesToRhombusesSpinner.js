@@ -1,111 +1,107 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect, useState } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const CircleRhombus = styled.div`
-  height: ${props => props.size}px;
-  width: ${props => (props.size + props.circleMarginLeft) * props.circleNum}px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  * {
-    box-sizing: border-box;
-  }
-
-  .circle {
-    height: ${props => props.size}px;
-    width: ${props => props.size}px;
-    margin-left: ${props => props.circleMarginLeft}px;
-    transform: rotate(45deg);
-    border-radius: 10%;
-    border: 3px solid ${props => props.color};
-    overflow: hidden;
-    background: transparent;
-    animation: circles-to-rhombuses-animation
-      ${props => props.animationDuration}ms linear infinite;
-  }
-  .circle:nth-child(1) {
-    animation-delay: calc(${props => props.delay}ms * 1);
-    margin-left: 0;
-  }
-  .circle:nth-child(2) {
-    animation-delay: calc(${props => props.delay}ms * 2);
-  }
-  .circle:nth-child(3) {
-    animation-delay: calc(${props => props.delay}ms * 3);
-  }
-  @keyframes circles-to-rhombuses-animation {
-    0% {
-      border-radius: 10%;
-    }
-    17.5% {
-      border-radius: 10%;
-    }
-    50% {
-      border-radius: 100%;
-    }
-    93.5% {
-      border-radius: 10%;
-    }
-    100% {
-      border-radius: 10%;
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicSpinnersProps = {
+  size?: number,
+  color?: string,
+  animationDuration?: number,
+  style?: ViewStyleProp
 };
 
-const defaultProps = {
+const EpicSpinnersDefaultProps = {
   size: 15,
-  color: '#fff',
-  animationDuration: 1200,
-  className: '',
+  color: 'red',
+  animationDuration: 1200
 };
 
-function generateRhombusChildren(num) {
-  return Array.from({ length: num }).map((val, index) => (
-    <div key={index} className="circle" />
-  ));
-}
+export const CirclesToRhombusesSpinner = (props: EpicSpinnersProps): Element<any> => {
+  const { size, color, animationDuration, style } = props;
+  const [leftCircle] = useState(new Animated.Value(0));
+  const [middleCircle] = useState(new Animated.Value(0));
+  const [rightCircle] = useState(new Animated.Value(0));
+  const circleMarginLeft = size * 0.5;
+  const squareBorderRadius = size * 0.1;
+  const circleBorderRadius = size * 0.5;
+  const animationDelay = animationDuration * 0.17;
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    circle: {
+      height: size,
+      width: size,
+      marginHorizontal: circleMarginLeft,
+      transform: [{ rotate: '45deg' }],
+      borderRadius: size * 0.1,
+      borderWidth: size * 0.2,
+      borderColor: color,
+      overflow: 'hidden'
+      // animation: circles-to-rhombuses-animation ${(props) => props.animationDuration}ms linear infinite;
+    }
+  });
+  const animateStyle = {
+    leftCircle: {
+      borderRadius: leftCircle.interpolate({
+        inputRange: [0, 1.7, 9.35, 10],
+        outputRange: [squareBorderRadius, circleBorderRadius, circleBorderRadius, squareBorderRadius]
+      })
+    },
+    middleCircle: {
+      borderRadius: middleCircle.interpolate({
+        inputRange: [0, 1.7, 9.35, 10],
+        outputRange: [squareBorderRadius, circleBorderRadius, circleBorderRadius, squareBorderRadius]
+      })
+    },
+    rightCircle: {
+      borderRadius: rightCircle.interpolate({
+        inputRange: [0, 1.7, 9.35, 10],
+        outputRange: [squareBorderRadius, circleBorderRadius, circleBorderRadius, squareBorderRadius]
+      })
+    }
+  };
 
-const CirclesToRhombusesSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => {
-  const circleMarginLeft = size * 1.125;
-  const circleNum = 3;
-  const delay = 150;
+  useEffect(() => {
+    Animated.stagger(animationDelay, [
+      Animated.loop(
+        Animated.timing(leftCircle, {
+          toValue: 10,
+          duration: animationDuration,
+          easing: Easing.linear(),
+          useNativeDriver: true
+        })
+      ),
+      Animated.loop(
+        Animated.timing(middleCircle, {
+          toValue: 10,
+          duration: animationDuration,
+          easing: Easing.linear(),
+          useNativeDriver: true
+        })
+      ),
+      Animated.loop(
+        Animated.timing(rightCircle, {
+          toValue: 10,
+          duration: animationDuration,
+          easing: Easing.linear(),
+          useNativeDriver: true
+        })
+      )
+    ]).start();
+  }, [animationDelay, animationDuration, leftCircle, middleCircle, rightCircle]);
 
   return (
-    <CircleRhombus
-      size={size}
-      color={color}
-      animationDuration={animationDuration}
-      className={`circles-to-rhombuses-spinner${
-        className ? ' ' + className : ''
-      }`}
-      style={style}
-      circleMarginLeft={circleMarginLeft}
-      delay={delay}
-      circleNum={circleNum}
-      {...props}
-    >
-      {generateRhombusChildren(circleNum)}
-    </CircleRhombus>
+    <View style={[style, spinnerStyle.container]} {...props}>
+      <Animated.View style={[spinnerStyle.circle, animateStyle.leftCircle]} />
+      <Animated.View style={[spinnerStyle.circle, animateStyle.middleCircle]} />
+      <Animated.View style={[spinnerStyle.circle, animateStyle.rightCircle]} />
+    </View>
   );
 };
-CirclesToRhombusesSpinner.propTypes = propTypes;
-CirclesToRhombusesSpinner.defaultProps = defaultProps;
-
-export default CirclesToRhombusesSpinner;
+CirclesToRhombusesSpinner.defaultProps = EpicSpinnersDefaultProps;
