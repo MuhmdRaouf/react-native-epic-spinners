@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { AtomSpinner } from './src/components/AtomSpinner';
+import { FingerprintSpinner } from './src/components/FingerprintSpinner';
 
 const App: () => React$Node = () => {
   const style = StyleSheet.create({
@@ -16,7 +16,7 @@ const App: () => React$Node = () => {
   });
   return (
     <View style={style.container}>
-      <AtomSpinner />
+      <FingerprintSpinner />
     </View>
   );
 };

@@ -1,136 +1,168 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect, useState } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const RingSpinner = styled.div`
-  height: ${props => props.size}px;
-  width: ${props => props.size}px;
-  padding: ${props => props.containerPadding}px;
-  overflow: hidden;
-  position: relative;
-
-  * {
-    box-sizing: border-box;
-  }
-
-  .spinner-ring {
-    position: absolute;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    border-top-color: ${props => props.color};
-    animation: fingerprint-spinner-animation
-      ${props => props.animationDuration}ms
-      cubic-bezier(0.68, -0.75, 0.265, 1.75) infinite forwards;
-    margin: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    top: 0;
-  }
-  .spinner-ring:nth-child(1) {
-    height: ${props => props.ringBase + 0 * props.ringBase}px;
-    width: ${props => props.ringBase + 0 * props.ringBase}px;
-    animation-delay: calc(50ms * 1);
-  }
-  .spinner-ring:nth-child(2) {
-    height: ${props => props.ringBase + 1 * props.ringBase}px;
-    width: ${props => props.ringBase + 1 * props.ringBase}px;
-    animation-delay: calc(50ms * 2);
-  }
-  .spinner-ring:nth-child(3) {
-    height: ${props => props.ringBase + 2 * props.ringBase}px;
-    width: ${props => props.ringBase + 2 * props.ringBase}px;
-    animation-delay: calc(50ms * 3);
-  }
-  .spinner-ring:nth-child(4) {
-    height: ${props => props.ringBase + 3 * props.ringBase}px;
-    width: ${props => props.ringBase + 3 * props.ringBase}px;
-    animation-delay: calc(50ms * 4);
-  }
-  .spinner-ring:nth-child(5) {
-    height: ${props => props.ringBase + 4 * props.ringBase}px;
-    width: ${props => props.ringBase + 4 * props.ringBase}px;
-    animation-delay: calc(50ms * 5);
-  }
-  .spinner-ring:nth-child(6) {
-    height: ${props => props.ringBase + 5 * props.ringBase}px;
-    width: ${props => props.ringBase + 5 * props.ringBase}px;
-    animation-delay: calc(50ms * 6);
-  }
-  .spinner-ring:nth-child(7) {
-    height: ${props => props.ringBase + 6 * props.ringBase}px;
-    width: ${props => props.ringBase + 6 * props.ringBase}px;
-    animation-delay: calc(50ms * 7);
-  }
-  .spinner-ring:nth-child(8) {
-    height: ${props => props.ringBase + 7 * props.ringBase}px;
-    width: ${props => props.ringBase + 7 * props.ringBase}px;
-    animation-delay: calc(50ms * 8);
-  }
-  .spinner-ring:nth-child(9) {
-    height: ${props => props.ringBase + 8 * props.ringBase}px;
-    width: ${props => props.ringBase + 8 * props.ringBase}px;
-    animation-delay: calc(50ms * 9);
-  }
-
-  @keyframes fingerprint-spinner-animation {
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicProps = {
+  size?: number,
+  animationDuration?: number,
+  color?: string,
+  style?: ViewStyleProp
+};
+const EpicSpinnersDefaultProps = {
+  size: 300,
+  color: 'red',
+  animationDuration: 1500
 };
 
-const defaultProps = {
-  size: 60,
-  color: '#fff',
-  animationDuration: 1500,
-  className: '',
-};
-
-function generateRings(num) {
-  return Array.from({ length: num }).map((val, index) => (
-    <div key={index} className="spinner-ring" />
-  ));
-}
-
-const FingerprintSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => {
+export const FingerprintSpinner = (props: EpicProps): Element<any> => {
+  const { size, animationDuration, color, style, ...restProps } = props;
+  const [first] = useState(new Animated.Value(0));
+  const [second] = useState(new Animated.Value(0));
+  const [third] = useState(new Animated.Value(0));
+  const [forth] = useState(new Animated.Value(0));
+  const [fifth] = useState(new Animated.Value(0));
+  const [sixth] = useState(new Animated.Value(0));
+  const [seventh] = useState(new Animated.Value(0));
+  const [eighth] = useState(new Animated.Value(0));
+  const [ninth] = useState(new Animated.Value(0));
   const ringsNum = 9;
   const containerPadding = 2;
   const outerRingSize = size - containerPadding * 2;
   const ringBase = outerRingSize / ringsNum;
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size,
+      padding: containerPadding,
+      overflow: 'hidden',
+      position: 'relative',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    spinnerRing: {
+      borderRadius: size * 0.5,
+      borderWidth: size * 0.03,
+      borderTopColor: color,
+      position: 'absolute'
+    },
+    spinnerRingFirstChild: {
+      height: ringBase,
+      width: ringBase
+    },
+    spinnerRingSecondChild: {
+      height: ringBase + ringBase,
+      width: ringBase + ringBase
+    },
+    spinnerRingThirdChild: {
+      height: ringBase + 2 * ringBase,
+      width: ringBase + 2 * ringBase
+    },
+    spinnerRingFourthChild: {
+      height: ringBase + 3 * ringBase,
+      width: ringBase + 3 * ringBase
+    },
+    spinnerRingFifthChild: {
+      height: ringBase + 4 * ringBase,
+      width: ringBase + 4 * ringBase
+    },
+    spinnerRingSixthChild: {
+      height: ringBase + 5 * ringBase,
+      width: ringBase + 5 * ringBase
+    },
+    spinnerRingSeventhChild: {
+      height: ringBase + 6 * ringBase,
+      width: ringBase + 6 * ringBase
+    },
+    spinnerRingEighthChild: {
+      height: ringBase + 7 * ringBase,
+      width: ringBase + 7 * ringBase
+    },
+    spinnerRingNinthChild: {
+      height: ringBase + 8 * ringBase,
+      width: ringBase + 8 * ringBase
+    }
+  });
+
+  const borderTransform = (animated) => [
+    {
+      rotate: animated.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '360deg']
+      })
+    }
+  ];
+
+  const animateStyle = {
+    firstRotate: { transform: borderTransform(first) },
+    secondRotate: { transform: borderTransform(second) },
+    thirdRotate: { transform: borderTransform(third) },
+    forthRotate: { transform: borderTransform(forth) },
+    fifthRotate: { transform: borderTransform(fifth) },
+    sixthRotate: { transform: borderTransform(sixth) },
+    seventhRotate: { transform: borderTransform(seventh) },
+    eighthRotate: { transform: borderTransform(eighth) },
+    ninthRotate: { transform: borderTransform(ninth) }
+  };
+
+  useEffect(() => {
+    const bezierAnimation = (animated) => {
+      return Animated.timing(animated, {
+        toValue: 1,
+        duration: animationDuration,
+        easing: Easing.bezier(0.68, -0.75, 0.265, 1.75),
+      });
+    };
+
+    Animated.loop(
+      Animated.stagger(50, [
+        bezierAnimation(first),
+        bezierAnimation(second),
+        bezierAnimation(third),
+        bezierAnimation(forth),
+        bezierAnimation(fifth),
+        bezierAnimation(sixth),
+        bezierAnimation(seventh),
+        bezierAnimation(eighth),
+        bezierAnimation(ninth)
+      ])
+    ).start();
+  }, [animationDuration, eighth, fifth, first, forth, ninth, second, seventh, sixth, third]);
 
   return (
-    <RingSpinner
-      size={size}
-      color={color}
-      animationDuration={animationDuration}
-      className={`fingerprint-spinner${className ? ' ' + className : ''}`}
-      style={style}
-      ringBase={ringBase}
-      containerPadding={containerPadding}
-      {...props}
-    >
-      {generateRings(ringsNum)}
-    </RingSpinner>
+    <View style={style} {...restProps}>
+      <View style={spinnerStyle.container}>
+        <Animated.View
+          style={[spinnerStyle.spinnerRing, spinnerStyle.spinnerRingFirstChild, animateStyle.firstRotate]}
+        />
+        <Animated.View
+          style={[spinnerStyle.spinnerRing, spinnerStyle.spinnerRingSecondChild, animateStyle.secondRotate]}
+        />
+        <Animated.View
+          style={[spinnerStyle.spinnerRing, spinnerStyle.spinnerRingThirdChild, animateStyle.thirdRotate]}
+        />
+        <Animated.View
+          style={[spinnerStyle.spinnerRing, spinnerStyle.spinnerRingFourthChild, animateStyle.forthRotate]}
+        />
+        <Animated.View
+          style={[spinnerStyle.spinnerRing, spinnerStyle.spinnerRingFifthChild, animateStyle.fifthRotate]}
+        />
+        <Animated.View
+          style={[spinnerStyle.spinnerRing, spinnerStyle.spinnerRingSixthChild, animateStyle.sixthRotate]}
+        />
+        <Animated.View
+          style={[spinnerStyle.spinnerRing, spinnerStyle.spinnerRingSeventhChild, animateStyle.seventhRotate]}
+        />
+        <Animated.View
+          style={[spinnerStyle.spinnerRing, spinnerStyle.spinnerRingEighthChild, animateStyle.eighthRotate]}
+        />
+        <Animated.View
+          style={[spinnerStyle.spinnerRing, spinnerStyle.spinnerRingNinthChild, animateStyle.ninthRotate]}
+        />
+      </View>
+    </View>
   );
 };
 
-FingerprintSpinner.propTypes = propTypes;
-FingerprintSpinner.defaultProps = defaultProps;
-
-export default FingerprintSpinner;
+FingerprintSpinner.defaultProps = EpicSpinnersDefaultProps;
