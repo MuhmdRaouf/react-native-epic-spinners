@@ -1,125 +1,112 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect, useState } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const IntersectingCircles = styled.div`
-  height: ${props => props.size}px;
-  width: ${props => props.size}px;
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-
-  * {
-    box-sizing: border-box;
-  }
-
-  .spinnerBlock {
-    animation: intersecting-circles-spinners-animation
-      ${props => props.animationDuration}ms linear infinite;
-    transform-origin: center;
-    display: block;
-    height: ${props => props.circleSize}px;
-    width: ${props => props.circleSize}px;
-  }
-  .circle {
-    display: block;
-    border: 2px solid ${props => props.color};
-    border-radius: 50%;
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
-  }
-  .circle:nth-child(1) {
-    left: 0;
-    top: 0;
-  }
-  .circle:nth-child(2) {
-    left: ${props => props.circleSize * -0.36}px;
-    top: ${props => props.circleSize * 0.2}px;
-  }
-  .circle:nth-child(3) {
-    left: ${props => props.circleSize * -0.36}px;
-    top: ${props => props.circleSize * -0.2}px;
-  }
-  .circle:nth-child(4) {
-    left: 0;
-    top: ${props => props.circleSize * -0.36}px;
-  }
-  .circle:nth-child(5) {
-    left: ${props => props.circleSize * 0.36}px;
-    top: ${props => props.circleSize * -0.2}px;
-  }
-  .circle:nth-child(6) {
-    left: ${props => props.circleSize * 0.36}px;
-    top: ${props => props.circleSize * 0.2}px;
-  }
-  .circle:nth-child(7) {
-    left: 0;
-    top: ${props => props.circleSize * 0.36}px;
-  }
-  @keyframes intersecting-circles-spinners-animation {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicSpinnersProps = {
+  size?: number,
+  color?: string,
+  animationDuration?: number,
+  style?: ViewStyleProp
 };
 
-const defaultProps = {
+const EpicSpinnersDefaultProps = {
   size: 70,
-  color: '#fff',
-  animationDuration: 1200,
-  className: '',
+  color: 'red',
+  animationDuration: 2500
 };
 
-function generateCircles(num) {
-  return Array.from({ length: num }).map((val, index) => (
-    <span key={index} className="circle" />
-  ));
-}
+export const IntersectingCirclesSpinner = (props: EpicSpinnersProps): Element<any> => {
+  const { size, color, animationDuration, style } = props;
+  const [animated] = useState(new Animated.Value(0));
+  const circleSize = size;
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size,
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    spinnerBlock: {
+      height: size,
+      width: size
+    },
+    circle: {
+      borderWidth: size * 0.06,
+      borderColor: color,
+      borderRadius: size * 0.5,
+      height: '100%',
+      width: '100%',
+      position: 'absolute',
+      left: 0,
+      top: 0
+    },
+    firstCircle: {
+      left: 0,
+      top: 0
+    },
+    secondCircle: {
+      left: circleSize * -0.36,
+      top: circleSize * 0.2
+    },
+    thirdCircle: {
+      left: circleSize * -0.36,
+      top: circleSize * -0.2
+    },
+    forthCircle: {
+      left: 0,
+      top: circleSize * -0.36
+    },
+    fifthCircle: {
+      left: circleSize * 0.36,
+      top: circleSize * -0.2
+    },
+    sixthCircle: {
+      left: circleSize * 0.36,
+      top: circleSize * 0.2
+    },
+    seventhCircle: {
+      left: 0,
+      top: circleSize * 0.36
+    }
+  });
+  const animateStyle = {
+    rotate: {
+      transform: [
+        {
+          rotate: animated.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['0deg', '360deg']
+          })
+        }
+      ]
+    }
+  };
 
-const IntersectingCirclesSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => {
-  const circleSize = size / 2;
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(animated, {
+        toValue: 2,
+        duration: animationDuration,
+        easing: Easing.linear
+      })
+    ).start();
+  }, [animated, animationDuration]);
 
   return (
-    <IntersectingCircles
-      size={size}
-      color={color}
-      animationDuration={animationDuration}
-      className={`intersecting-circles-spinner${
-        className ? ' ' + className : ''
-      }`}
-      style={style}
-      circleSize={circleSize}
-      {...props}
-    >
-      <div className="spinnerBlock">{generateCircles(7)}</div>
-    </IntersectingCircles>
+    <Animated.View style={[style, spinnerStyle.container, animateStyle.rotate]} {...props}>
+      <View style={spinnerStyle.spinnerBlock}>
+        <View style={[spinnerStyle.circle, spinnerStyle.firstCircle]} />
+        <View style={[spinnerStyle.circle, spinnerStyle.secondCircle]} />
+        <View style={[spinnerStyle.circle, spinnerStyle.thirdCircle]} />
+        <View style={[spinnerStyle.circle, spinnerStyle.forthCircle]} />
+        <View style={[spinnerStyle.circle, spinnerStyle.fifthCircle]} />
+        <View style={[spinnerStyle.circle, spinnerStyle.sixthCircle]} />
+        <View style={[spinnerStyle.circle, spinnerStyle.seventhCircle]} />
+      </View>
+    </Animated.View>
   );
 };
 
-IntersectingCirclesSpinner.propTypes = propTypes;
-IntersectingCirclesSpinner.defaultProps = defaultProps;
-
-export default IntersectingCirclesSpinner;
+IntersectingCirclesSpinner.defaultProps = EpicSpinnersDefaultProps;
