@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { IntersectingCirclesSpinner } from './src/components/IntersectingCirclesSpinner';
+import { AtomSpinner } from './src/components/AtomSpinner';
 
 const App: () => React$Node = () => {
   const style = StyleSheet.create({
@@ -16,7 +16,7 @@ const App: () => React$Node = () => {
   });
   return (
     <View style={style.container}>
-      <IntersectingCirclesSpinner />
+      <AtomSpinner />
     </View>
   );
 };
