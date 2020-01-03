@@ -1,109 +1,100 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect, useState } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import type AnimatedInterpolation from 'react-native/Libraries/Animated/src/nodes/AnimatedInterpolation';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const Orbit = styled.div`
-  height: ${props => props.size}px;
-  width: ${props => props.size}px;
-  border-radius: 50%;
-  perspective: 800px;
-
-  * {
-    box-sizing: border-box;
-  }
-
-  .orbit {
-    position: absolute;
-    box-sizing: border-box;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-  }
-  .orbit:nth-child(1) {
-    left: 0%;
-    top: 0%;
-    animation: orbit-spinner-orbit-one-animation
-      ${props => props.animationDuration}ms linear infinite;
-    border-bottom: 3px solid ${props => props.color};
-  }
-  .orbit:nth-child(2) {
-    right: 0%;
-    top: 0%;
-    animation: orbit-spinner-orbit-two-animation
-      ${props => props.animationDuration}ms linear infinite;
-    border-right: 3px solid ${props => props.color};
-  }
-  .orbit:nth-child(3) {
-    right: 0%;
-    bottom: 0%;
-    animation: orbit-spinner-orbit-three-animation
-      ${props => props.animationDuration}ms linear infinite;
-    border-top: 3px solid ${props => props.color};
-  }
-  @keyframes orbit-spinner-orbit-one-animation {
-    0% {
-      transform: rotateX(35deg) rotateY(-45deg) rotateZ(0deg);
-    }
-    100% {
-      transform: rotateX(35deg) rotateY(-45deg) rotateZ(360deg);
-    }
-  }
-  @keyframes orbit-spinner-orbit-two-animation {
-    0% {
-      transform: rotateX(50deg) rotateY(10deg) rotateZ(0deg);
-    }
-    100% {
-      transform: rotateX(50deg) rotateY(10deg) rotateZ(360deg);
-    }
-  }
-  @keyframes orbit-spinner-orbit-three-animation {
-    0% {
-      transform: rotateX(35deg) rotateY(55deg) rotateZ(0deg);
-    }
-    100% {
-      transform: rotateX(35deg) rotateY(55deg) rotateZ(360deg);
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicProps = {
+  size?: number,
+  animationDuration?: number,
+  color?: string,
+  style?: ViewStyleProp
+};
+type TransformationTypeProp = {
+  rotateX: string | AnimatedInterpolation,
+  rotateY: string | AnimatedInterpolation,
+  rotateZ: string | AnimatedInterpolation
+};
+const EpicSpinnersDefaultProps = {
+  size: 250,
+  color: 'red',
+  animationDuration: 1000
 };
 
-const defaultProps = {
-  size: 50,
-  color: '#fff',
-  animationDuration: 1000,
-  className: '',
+export const OrbitSpinner = (props: EpicProps): Element<any> => {
+  const { size, animationDuration, color, style } = props;
+  const spinnerWidth = size * 0.05;
+  const [orbitLine] = useState(new Animated.Value(0));
+  const animatedOrbitLine = orbitLine.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
+  const getAnimatedTransformation = ({ rotateX, rotateY, rotateZ }: TransformationTypeProp) => {
+    return { transform: [{ rotateX }, { rotateY }, { rotateZ }] };
+  };
+  const getOrbitView = () => {
+    return ['firstOrbitLine', 'secondOrbitLine', 'thirdOrbitLine'].map((styleClassName, index) => {
+      return (
+        <Animated.View
+          key={index}
+          style={[spinnerStyle.orbit, spinnerStyle[styleClassName], animateStyle[styleClassName]]}
+        />
+      );
+    });
+  };
+
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size,
+      borderRadius: size * 0.5,
+      transform: [{ perspective: 850 }]
+    },
+    orbit: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      borderRadius: size * 0.5
+    },
+    firstOrbitLine: {
+      left: 0,
+      top: 0,
+      borderBottomWidth: spinnerWidth,
+      borderBottomColor: color
+    },
+    secondOrbitLine: {
+      right: 0,
+      top: 0,
+      borderRightWidth: spinnerWidth,
+      borderRightColor: color
+    },
+    thirdOrbitLine: {
+      right: 0,
+      bottom: 0,
+      borderTopWidth: spinnerWidth,
+      borderTopColor: color
+    }
+  });
+
+  const animateStyle = {
+    firstOrbitLine: getAnimatedTransformation({ rotateX: '35deg', rotateY: '-45deg', rotateZ: animatedOrbitLine }),
+    secondOrbitLine: getAnimatedTransformation({ rotateX: '50deg', rotateY: '10deg', rotateZ: animatedOrbitLine }),
+    thirdOrbitLine: getAnimatedTransformation({ rotateX: '35deg', rotateY: '55deg', rotateZ: animatedOrbitLine })
+  };
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(orbitLine, {
+        toValue: 1,
+        duration: animationDuration,
+        easing: Easing.linear
+      })
+    ).start();
+  }, [animationDuration, orbitLine]);
+
+  return (
+    <View style={style} {...props}>
+      <View style={spinnerStyle.container}>{getOrbitView()}</View>
+    </View>
+  );
 };
 
-const OrbitSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => (
-  <Orbit
-    size={size}
-    color={color}
-    animationDuration={animationDuration}
-    className={`orbit-spinner${className ? ' ' + className : ''}`}
-    style={style}
-    {...props}
-  >
-    <div className="orbit one" />
-    <div className="orbit two" />
-    <div className="orbit three" />
-  </Orbit>
-);
-
-OrbitSpinner.propTypes = propTypes;
-OrbitSpinner.defaultProps = defaultProps;
-
-export default OrbitSpinner;
+OrbitSpinner.defaultProps = EpicSpinnersDefaultProps;
