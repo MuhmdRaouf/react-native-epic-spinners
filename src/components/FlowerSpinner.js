@@ -1,8 +1,10 @@
 /** @flow **/
 import type { Element } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
+
+import { useAnimated } from '../core/customHooks';
 
 type EpicProps = {
   size?: number,
@@ -19,6 +21,7 @@ const EpicSpinnersDefaultProps = {
 export const FlowerSpinner = (props: EpicProps): Element<any> => {
   const { size, animationDuration, color, style, ...restProps } = props;
   const dotSize = size / 7;
+  const dotNumber = 8;
   const bigDotAxisDirection = {
     center: 0,
     positive: size * 0.4,
@@ -33,24 +36,11 @@ export const FlowerSpinner = (props: EpicProps): Element<any> => {
     positiveCorner: size * 0.15,
     negativeCorner: size * -0.15
   };
-  const [dotsContainer] = useState(new Animated.Value(0));
-  const [bigDot1] = useState(new Animated.Value(0));
-  const [bigDot2] = useState(new Animated.Value(0));
-  const [bigDot3] = useState(new Animated.Value(0));
-  const [bigDot4] = useState(new Animated.Value(0));
-  const [bigDot5] = useState(new Animated.Value(0));
-  const [bigDot6] = useState(new Animated.Value(0));
-  const [bigDot7] = useState(new Animated.Value(0));
-  const [bigDot8] = useState(new Animated.Value(0));
-
-  const [smallDot1] = useState(new Animated.Value(0));
-  const [smallDot2] = useState(new Animated.Value(0));
-  const [smallDot3] = useState(new Animated.Value(0));
-  const [smallDot4] = useState(new Animated.Value(0));
-  const [smallDot5] = useState(new Animated.Value(0));
-  const [smallDot6] = useState(new Animated.Value(0));
-  const [smallDot7] = useState(new Animated.Value(0));
-  const [smallDot8] = useState(new Animated.Value(0));
+  const [dotsContainer] = useAnimated();
+  const [bigDot1, bigDot2, bigDot3, bigDot4, bigDot5, bigDot6, bigDot7, bigDot8] = useAnimated(dotNumber);
+  const [smallDot1, smallDot2, smallDot3, smallDot4, smallDot5, smallDot6, smallDot7, smallDot8] = useAnimated(
+    dotNumber
+  );
   const spinnerStyle = StyleSheet.create({
     container: {
       height: size,

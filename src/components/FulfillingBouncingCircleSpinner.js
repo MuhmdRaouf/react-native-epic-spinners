@@ -1,8 +1,10 @@
 /** @flow **/
 import type { Element } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet } from 'react-native';
+
+import { useAnimated } from '../core/customHooks';
 
 type EpicSpinnersProps = {
   size?: number,
@@ -19,7 +21,7 @@ const EpicSpinnersDefaultProps = {
 
 export const FulfillingBouncingCircleSpinner = (props: EpicSpinnersProps): Element<any> => {
   const { size, color, animationDuration, style } = props;
-  const [animate] = useState(new Animated.Value(0));
+  const [animate] = useAnimated(new Animated.Value(0));
   const spinnerStyle = StyleSheet.create({
     container: {
       height: size,

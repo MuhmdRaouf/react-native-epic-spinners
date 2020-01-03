@@ -3,6 +3,7 @@ import type { Element } from 'react';
 import React, { useEffect, useState } from 'react';
 import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { useAnimated } from '../core/customHooks';
 
 type EpicSpinnersProps = {
   size?: number,
@@ -19,9 +20,7 @@ const EpicSpinnersDefaultProps = {
 
 export const CirclesToRhombusesSpinner = (props: EpicSpinnersProps): Element<any> => {
   const { size, color, animationDuration, style } = props;
-  const [leftCircle] = useState(new Animated.Value(0));
-  const [middleCircle] = useState(new Animated.Value(0));
-  const [rightCircle] = useState(new Animated.Value(0));
+  const [leftCircle, middleCircle, rightCircle] = useAnimated(3);
   const circleMarginLeft = size * 0.5;
   const squareBorderRadius = size * 0.1;
   const circleBorderRadius = size * 0.5;

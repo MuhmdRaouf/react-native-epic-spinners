@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { OrbitSpinner } from './src/components/OrbitSpinner';
+import { PixelSpinner } from './src/components/PixelSpinner';
 
 const App: () => React$Node = () => {
   const style = StyleSheet.create({
@@ -16,7 +16,7 @@ const App: () => React$Node = () => {
   });
   return (
     <View style={style.container}>
-      <OrbitSpinner />
+      <PixelSpinner />
     </View>
   );
 };

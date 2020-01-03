@@ -1,8 +1,10 @@
 /** @flow **/
 import type { Element } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
+
+import { useAnimated } from '../core/customHooks';
 
 type EpicProps = {
   size?: number,
@@ -18,8 +20,7 @@ const EpicSpinnersDefaultProps = {
 
 export const FulfillingSquareSpinner = (props: EpicProps): Element<any> => {
   const { size, animationDuration, color, style } = props;
-  const [animatedContainer] = useState(new Animated.Value(0));
-  const [animatedInnerSpinner] = useState(new Animated.Value(0));
+  const [animatedContainer, animatedInnerSpinner] = useAnimated(2);
   const spinnerStyle = StyleSheet.create({
     container: {
       height: size,

@@ -1,0 +1,4 @@
+/**
+ * Jest configuration
+ * @flow
+ **/

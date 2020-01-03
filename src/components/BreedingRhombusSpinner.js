@@ -1,8 +1,10 @@
 /** @flow **/
 import type { Element } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, StyleSheet, View } from 'react-native';
+
+import { useAnimated } from '../core/customHooks';
 
 type EpicSpinnersProps = {
   size?: number,
@@ -27,14 +29,16 @@ export const BreedingRhombusSpinner = (props: EpicSpinnersProps): Element<any> =
     slowNegative: size * -0.5
   };
   const delayModifier = animationDuration * 0.05;
-  const [smallRhombus1] = useState(new Animated.Value(0));
-  const [smallRhombus2] = useState(new Animated.Value(0));
-  const [smallRhombus3] = useState(new Animated.Value(0));
-  const [smallRhombus4] = useState(new Animated.Value(0));
-  const [smallRhombus5] = useState(new Animated.Value(0));
-  const [smallRhombus6] = useState(new Animated.Value(0));
-  const [smallRhombus7] = useState(new Animated.Value(0));
-  const [smallRhombus8] = useState(new Animated.Value(0));
+  const [
+    smallRhombus1,
+    smallRhombus2,
+    smallRhombus3,
+    smallRhombus4,
+    smallRhombus5,
+    smallRhombus6,
+    smallRhombus7,
+    smallRhombus8
+  ] = useAnimated(8);
   const spinnerStyle = StyleSheet.create({
     container: {
       height: size,

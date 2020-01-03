@@ -1,8 +1,10 @@
 /** @flow **/
 import type { Element } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
+
+import { useAnimated } from '../core/customHooks';
 
 type EpicProps = {
   size?: number,
@@ -18,19 +20,11 @@ const EpicSpinnersDefaultProps = {
 
 export const FingerprintSpinner = (props: EpicProps): Element<any> => {
   const { size, animationDuration, color, style, ...restProps } = props;
-  const [first] = useState(new Animated.Value(0));
-  const [second] = useState(new Animated.Value(0));
-  const [third] = useState(new Animated.Value(0));
-  const [forth] = useState(new Animated.Value(0));
-  const [fifth] = useState(new Animated.Value(0));
-  const [sixth] = useState(new Animated.Value(0));
-  const [seventh] = useState(new Animated.Value(0));
-  const [eighth] = useState(new Animated.Value(0));
-  const [ninth] = useState(new Animated.Value(0));
-  const ringsNum = 9;
+  const ringsNumber = 9;
+  const [first, second, third, forth, fifth, sixth, seventh, eighth, ninth] = useAnimated(ringsNumber);
   const containerPadding = 2;
   const outerRingSize = size - containerPadding * 2;
-  const ringBase = outerRingSize / ringsNum;
+  const ringBase = outerRingSize / ringsNumber;
   const spinnerStyle = StyleSheet.create({
     container: {
       height: size,
@@ -111,7 +105,7 @@ export const FingerprintSpinner = (props: EpicProps): Element<any> => {
       return Animated.timing(animated, {
         toValue: 1,
         duration: animationDuration,
-        easing: Easing.bezier(0.68, -0.75, 0.265, 1.75),
+        easing: Easing.bezier(0.68, -0.75, 0.265, 1.75)
       });
     };
 

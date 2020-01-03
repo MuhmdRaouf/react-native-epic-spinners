@@ -1,9 +1,11 @@
 /** @flow **/
 import type { Element } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import type AnimatedInterpolation from 'react-native/Libraries/Animated/src/nodes/AnimatedInterpolation';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
+
+import { useAnimated } from '../core/customHooks';
 
 type EpicProps = {
   size?: number,
@@ -25,7 +27,7 @@ const EpicSpinnersDefaultProps = {
 export const OrbitSpinner = (props: EpicProps): Element<any> => {
   const { size, animationDuration, color, style } = props;
   const spinnerWidth = size * 0.05;
-  const [orbitLine] = useState(new Animated.Value(0));
+  const [orbitLine] = useAnimated();
   const animatedOrbitLine = orbitLine.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
   const getAnimatedTransformation = ({ rotateX, rotateY, rotateZ }: TransformationTypeProp) => {
     return { transform: [{ rotateX }, { rotateY }, { rotateZ }] };
@@ -46,7 +48,7 @@ export const OrbitSpinner = (props: EpicProps): Element<any> => {
       height: size,
       width: size,
       borderRadius: size * 0.5,
-      transform: [{ perspective: 850 }]
+      transform: [{ perspective: 800 }]
     },
     orbit: {
       position: 'absolute',

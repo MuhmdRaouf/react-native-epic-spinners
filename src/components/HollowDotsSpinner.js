@@ -1,8 +1,10 @@
 /** @flow **/
 import type { Element } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
+
+import { useAnimated } from '../core/customHooks';
 
 type EpicSpinnersProps = {
   size?: number,
@@ -21,9 +23,7 @@ export const HollowDotsSpinner = (props: EpicSpinnersProps): Element<any> => {
   const { size, color, animationDuration, style } = props;
   const dotsNum = 3;
   const animationDelay = animationDuration * 0.3;
-  const [leftCircle] = useState(new Animated.Value(0));
-  const [middleCircle] = useState(new Animated.Value(0));
-  const [rightCircle] = useState(new Animated.Value(0));
+  const [leftCircle, middleCircle, rightCircle] = useAnimated(3);
   const spinnerStyle = StyleSheet.create({
     container: {
       flexDirection: 'row',

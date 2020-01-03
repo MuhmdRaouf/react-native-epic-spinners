@@ -1,8 +1,10 @@
 /** @flow **/
 import type { Element } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
+
+import { useAnimated } from '../core/customHooks';
 
 type EpicSpinnersProps = {
   size?: number,
@@ -19,9 +21,7 @@ const EpicSpinnersDefaultProps = {
 
 export const LoopingRhombusesSpinner = (props: EpicSpinnersProps): Element<any> => {
   const { size, color, animationDuration, style } = props;
-  const [firstRhombuses] = useState(new Animated.Value(0));
-  const [secondRhombuses] = useState(new Animated.Value(0));
-  const [thirdRhombuses] = useState(new Animated.Value(0));
+  const [firstRhombuses, secondRhombuses, thirdRhombuses] = useAnimated(3);
   const spinnerStyle = StyleSheet.create({
     container: {
       height: size,
