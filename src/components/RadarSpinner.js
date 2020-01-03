@@ -1,113 +1,113 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const Radar = styled.div`
-  height: ${props => props.size}px;
-  width: ${props => props.size}px;
-  position: relative;
+import { useAnimated } from '../core/customHooks';
 
-  * {
-    box-sizing: border-box;
-  }
-
-  .circle {
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    left: 0;
-    animation: radar-spinner-animation ${props => props.animationDuration}ms
-      infinite;
-  }
-  .circle:nth-child(1) {
-    padding: ${props => props.borderWidth * 2 * 0}px;
-    animation-delay: ${props => props.animationDuration * 0.15}ms;
-  }
-  .circle:nth-child(2) {
-    padding: ${props => props.borderWidth * 2 * 1}px;
-    animation-delay: ${props => props.animationDuration * 0.15}ms;
-  }
-  .circle:nth-child(3) {
-    padding: ${props => props.borderWidth * 2 * 2}px;
-    animation-delay: ${props => props.animationDuration * 0.15}ms;
-  }
-  .circle:nth-child(4) {
-    padding: ${props => props.borderWidth * 2 * 3}px;
-    animation-delay: 0ms;
-  }
-  .circle-inner,
-  .circle-inner-container {
-    height: 100%;
-    width: 100%;
-    border-radius: 50%;
-    border: ${props => props.borderWidth}px solid transparent;
-  }
-  .circle-inner {
-    border-left-color: ${props => props.color};
-    border-right-color: ${props => props.color};
-  }
-  @keyframes radar-spinner-animation {
-    50% {
-      transform: rotate(180deg);
-    }
-    100% {
-      transform: rotate(0deg);
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicProps = {
+  size?: number,
+  animationDuration?: number,
+  color?: string,
+  style?: ViewStyleProp
 };
 
-const defaultProps = {
-  size: 110,
-  color: '#fff',
-  animationDuration: 2000,
-  className: '',
+const EpicSpinnersDefaultProps = {
+  size: 50,
+  color: 'red',
+  animationDuration: 2000
 };
 
-function generateSpinners(num) {
-  return Array.from({ length: num }).map((val, index) => (
-    <div key={index} className="circle">
-      <div className="circle-inner-container">
-        <div className="circle-inner" />
-      </div>
-    </div>
-  ));
-}
+export const RadarSpinner = (props: EpicProps): Element<any> => {
+  const { size, animationDuration, color, style } = props;
+  const borderWidth = size * 0.2;
+  const animationDelay = animationDuration * 0.15;
+  const [coreCircle, biggerCircles] = useAnimated(2);
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    circleContainer: {
+      height: '100%',
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    circle: {
+      height: '100%',
+      width: '100%',
+      position: 'absolute',
+      borderRadius: size * size,
+      borderWidth: borderWidth,
+      borderColor: color,
+      backgroundColor: 'transparent',
+      borderTopColor: 'transparent',
+      borderBottomColor: 'transparent'
+    },
+    firstCircle: {
+      padding: borderWidth * 2
+    },
+    secondCircle: {
+      padding: borderWidth * 2 * 2
+    },
+    thirdCircle: {
+      padding: borderWidth * 2 * 3
+    },
+    forthCircle: {
+      padding: borderWidth * 2 * 4
+    }
+  });
 
-const RadarSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => {
-  const borderWidth = size * 5 / 110;
+  const getTransformRotation = (animated) => {
+    return {
+      transform: [
+        {
+          rotate: animated.interpolate({
+            inputRange: [0, 1, 2, 3, 4],
+            outputRange: ['0deg', '170deg', '180deg', '10deg', '0deg']
+          })
+        }
+      ]
+    };
+  };
+
+  const animatedStyle = {
+    coreCircle: getTransformRotation(coreCircle),
+    biggerCircle: getTransformRotation(biggerCircles)
+  };
+
+  useEffect(() => {
+    const getAnimatedTiming = (animated) => {
+      return Animated.loop(
+        Animated.timing(animated, {
+          toValue: 4,
+          duration: animationDuration,
+          easing: Easing.linear
+        })
+      );
+    };
+    Animated.stagger(animationDelay, [getAnimatedTiming(coreCircle), getAnimatedTiming(biggerCircles)]).start();
+  }, [animationDelay, animationDuration, biggerCircles, coreCircle]);
 
   return (
-    <Radar
-      size={size}
-      color={color}
-      animationDuration={animationDuration}
-      className={`radar-spinner${className ? ' ' + className : ''}`}
-      style={style}
-      borderWidth={borderWidth}
-      {...props}
-    >
-      {generateSpinners(4)}
-    </Radar>
+    <View style={[style]} {...props}>
+      <View style={spinnerStyle.container}>
+        <View style={spinnerStyle.circleContainer}>
+          <Animated.View style={[spinnerStyle.circle, spinnerStyle.firstCircle, animatedStyle.coreCircle]} />
+          <Animated.View style={[spinnerStyle.circleContainer, animatedStyle.biggerCircle]}>
+            <View style={[spinnerStyle.circle, spinnerStyle.secondCircle]} />
+            <View style={[spinnerStyle.circle, spinnerStyle.thirdCircle]} />
+            <View style={[spinnerStyle.circle, spinnerStyle.forthCircle]} />
+          </Animated.View>
+        </View>
+      </View>
+    </View>
   );
 };
 
-RadarSpinner.propTypes = propTypes;
-RadarSpinner.defaultProps = defaultProps;
-
-export default RadarSpinner;
+RadarSpinner.defaultProps = EpicSpinnersDefaultProps;
