@@ -243,40 +243,23 @@ export const BreedingRhombusSpinner = (props: EpicSpinnersProps): Element<any> =
   };
 
   useEffect(() => {
+    const getAnimatedTiming = (animated) => {
+      return Animated.timing(animated, {
+        toValue: 2,
+        duration: animationDuration
+      });
+    };
+
     Animated.loop(
       Animated.stagger(delayModifier, [
-        Animated.timing(smallRhombus1, {
-          toValue: 2,
-          duration: animationDuration
-        }),
-        Animated.timing(smallRhombus2, {
-          toValue: 2,
-          duration: animationDuration
-        }),
-        Animated.timing(smallRhombus3, {
-          toValue: 2,
-          duration: animationDuration
-        }),
-        Animated.timing(smallRhombus4, {
-          toValue: 2,
-          duration: animationDuration
-        }),
-        Animated.timing(smallRhombus5, {
-          toValue: 2,
-          duration: animationDuration
-        }),
-        Animated.timing(smallRhombus6, {
-          toValue: 2,
-          duration: animationDuration
-        }),
-        Animated.timing(smallRhombus7, {
-          toValue: 2,
-          duration: animationDuration
-        }),
-        Animated.timing(smallRhombus8, {
-          toValue: 2,
-          duration: animationDuration
-        })
+        getAnimatedTiming(smallRhombus1),
+        getAnimatedTiming(smallRhombus2),
+        getAnimatedTiming(smallRhombus3),
+        getAnimatedTiming(smallRhombus4),
+        getAnimatedTiming(smallRhombus5),
+        getAnimatedTiming(smallRhombus6),
+        getAnimatedTiming(smallRhombus7),
+        getAnimatedTiming(smallRhombus8)
       ])
     ).start();
   }, [

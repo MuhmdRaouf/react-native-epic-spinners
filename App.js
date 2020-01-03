@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ScalingSquaresSpinner } from './src/components/ScalingSquaresSpinner';
+import { SelfBuildingSquareSpinner } from './src/components/SelfBuildingSquareSpinner';
 
 const App: () => React$Node = () => {
   const style = StyleSheet.create({
@@ -16,7 +16,7 @@ const App: () => React$Node = () => {
   });
   return (
     <View style={style.container}>
-      <ScalingSquaresSpinner />
+      <SelfBuildingSquareSpinner />
     </View>
   );
 };

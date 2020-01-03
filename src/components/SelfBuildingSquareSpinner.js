@@ -1,127 +1,114 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const BuildingSquare = styled.div`
-  height: ${props => props.size}px;
-  width: ${props => props.size}px;
-  top: ${props => -1 * props.initialTopPosition}px;
+import { useAnimated } from '../core/customHooks';
 
-  * {
-    box-sizing: border-box;
-  }
-
-  .square {
-    height: ${props => props.size / 4}px;
-    width: ${props => props.size / 4}px;
-    top: ${props => -1 * props.initialTopPosition}px;
-    margin-right: calc(${props => props.size / 4}px / 3);
-    margin-top: calc(${props => props.size / 4}px / 3);
-    background: ${props => props.color};
-    float: left;
-    position: relative;
-    opacity: 0;
-    animation: self-building-square-spinner
-      ${props => props.animationDuration}ms infinite;
-  }
-  .square:nth-child(1) {
-    animation-delay: calc(${props => props.animationDuration * 0.05}ms * 6);
-  }
-  .square:nth-child(2) {
-    animation-delay: calc(${props => props.animationDuration * 0.05}ms * 7);
-  }
-  .square:nth-child(3) {
-    animation-delay: calc(${props => props.animationDuration * 0.05}ms * 8);
-  }
-  .square:nth-child(4) {
-    animation-delay: calc(${props => props.animationDuration * 0.05}ms * 3);
-  }
-  .square:nth-child(5) {
-    animation-delay: calc(${props => props.animationDuration * 0.05}ms * 4);
-  }
-  .square:nth-child(6) {
-    animation-delay: calc(${props => props.animationDuration * 0.05}ms * 5);
-  }
-  .square:nth-child(7) {
-    animation-delay: calc(${props => props.animationDuration * 0.05}ms * 0);
-  }
-  .square:nth-child(8) {
-    animation-delay: calc(${props => props.animationDuration * 0.05}ms * 1);
-  }
-  .square:nth-child(9) {
-    animation-delay: calc(${props => props.animationDuration * 0.05}ms * 2);
-  }
-  .clear {
-    clear: both;
-  }
-  @keyframes self-building-square-spinner {
-    0% {
-      opacity: 0;
-    }
-    5% {
-      opacity: 1;
-      top: 0;
-    }
-    50.9% {
-      opacity: 1;
-      top: 0;
-    }
-    55.9% {
-      opacity: 0;
-      top: inherit;
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicProps = {
+  size?: number,
+  animationDuration?: number,
+  color?: string,
+  style?: ViewStyleProp
 };
 
-const defaultProps = {
+const EpicSpinnersDefaultProps = {
   size: 40,
-  color: '#fff',
-  animationDuration: 6000,
-  className: '',
+  color: 'red',
+  animationDuration: 5000
 };
 
-function generateSpinners(num) {
-  return Array.from({ length: num }).map((val, index) => (
-    <div key={index} className={`square${index % 3 === 0 ? ' clear' : ''}`} />
-  ));
-}
+export const SelfBuildingSquareSpinner = (props: EpicProps): Element<any> => {
+  const { size, animationDuration, color, style } = props;
+  const [square1, square2, square3, square4, square5, square6, square7, square8, square9] = useAnimated(9);
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size
+    },
+    squareContainer: {
+      flexDirection: 'row'
+    },
+    square: {
+      height: size / 4,
+      width: size / 4,
+      marginRight: size / 4,
+      marginTop: size / 4,
+      backgroundColor: color,
+      position: 'relative'
+    }
+  });
+  const getAnimatedStyle = (animated) => {
+    return {
+      opacity: animated.interpolate({
+        inputRange: [0, 0.5, 5.09, 5.59, 6],
+        outputRange: [0, 1, 1, 0, 0]
+      }),
+      top: animated.interpolate({
+        inputRange: [0, 0.5, 5.09, 5.59, 6],
+        outputRange: [-1, 5, 5, -1, -1]
+      })
+    };
+  };
 
-const SelfBuildingSquareSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => {
-  const initialTopPosition = size / 6;
+  const animatedStyle = {
+    square1: getAnimatedStyle(square1),
+    square2: getAnimatedStyle(square2),
+    square3: getAnimatedStyle(square3),
+    square4: getAnimatedStyle(square4),
+    square5: getAnimatedStyle(square5),
+    square6: getAnimatedStyle(square6),
+    square7: getAnimatedStyle(square7),
+    square8: getAnimatedStyle(square8),
+    square9: getAnimatedStyle(square9)
+  };
+
+  useEffect(() => {
+    const getAnimatedTiming = (animated) => {
+      return Animated.timing(animated, {
+        toValue: 6,
+        duration: animationDuration,
+        easing: Easing.linear
+      });
+    };
+
+    Animated.loop(
+      Animated.stagger(animationDuration * 0.09, [
+        getAnimatedTiming(square7),
+        getAnimatedTiming(square8),
+        getAnimatedTiming(square9),
+        getAnimatedTiming(square4),
+        getAnimatedTiming(square5),
+        getAnimatedTiming(square6),
+        getAnimatedTiming(square1),
+        getAnimatedTiming(square2),
+        getAnimatedTiming(square3)
+      ])
+    ).start();
+  }, [animationDuration, square1, square2, square3, square4, square5, square6, square7, square8, square9]);
 
   return (
-    <BuildingSquare
-      size={size}
-      color={color}
-      animationDuration={animationDuration}
-      className={`self-building-square-spinner${
-        className ? ' ' + className : ''
-      }`}
-      style={style}
-      initialTopPosition={initialTopPosition}
-      {...props}
-    >
-      {generateSpinners(9)}
-    </BuildingSquare>
+    <View style={style} {...props}>
+      <View style={spinnerStyle.container}>
+        <View style={spinnerStyle.squareContainer}>
+          <Animated.View style={[spinnerStyle.square, animatedStyle.square1]} />
+          <Animated.View style={[spinnerStyle.square, animatedStyle.square2]} />
+          <Animated.View style={[spinnerStyle.square, animatedStyle.square3]} />
+        </View>
+        <View style={spinnerStyle.squareContainer}>
+          <Animated.View style={[spinnerStyle.square, animatedStyle.square4]} />
+          <Animated.View style={[spinnerStyle.square, animatedStyle.square5]} />
+          <Animated.View style={[spinnerStyle.square, animatedStyle.square6]} />
+        </View>
+        <View style={spinnerStyle.squareContainer}>
+          <Animated.View style={[spinnerStyle.square, animatedStyle.square7]} />
+          <Animated.View style={[spinnerStyle.square, animatedStyle.square8]} />
+          <Animated.View style={[spinnerStyle.square, animatedStyle.square9]} />
+        </View>
+      </View>
+    </View>
   );
 };
 
-SelfBuildingSquareSpinner.propTypes = propTypes;
-SelfBuildingSquareSpinner.defaultProps = defaultProps;
-
-export default SelfBuildingSquareSpinner;
+SelfBuildingSquareSpinner.defaultProps = EpicSpinnersDefaultProps;
