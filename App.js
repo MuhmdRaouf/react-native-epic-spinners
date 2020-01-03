@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { HalfCircleSpinner } from './src/components/HalfCircleSpinner';
+import { LoopingRhombusesSpinner } from './src/components/LoopingRhombusesSpinner';
 
 const App: () => React$Node = () => {
   const style = StyleSheet.create({
@@ -16,7 +16,7 @@ const App: () => React$Node = () => {
   });
   return (
     <View style={style.container}>
-      <HalfCircleSpinner />
+      <LoopingRhombusesSpinner />
     </View>
   );
 };

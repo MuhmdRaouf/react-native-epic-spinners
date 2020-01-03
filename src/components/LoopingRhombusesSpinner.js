@@ -1,96 +1,111 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect, useState } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const LoadingRhombus = styled.div`
-  width: ${props => props.size * 4}px;
-  height: ${props => props.size}px;
-  position: relative;
-
-  * {
-    box-sizing: border-box;
-  }
-
-  .rhombus {
-    height: ${props => props.size}px;
-    width: ${props => props.size}px;
-    background-color: ${props => props.color};
-    left: ${props => props.size * 4}px;
-    position: absolute;
-    margin: 0 auto;
-    border-radius: 2px;
-    transform: translateY(0) rotate(45deg) scale(0);
-    animation: looping-rhombuses-spinner-animation
-      ${props => props.animationDuration}ms linear infinite;
-  }
-  .rhombus:nth-child(1) {
-    animation-delay: calc(${props => props.animationDuration}ms * 1 / -1.5);
-  }
-  .rhombus:nth-child(2) {
-    animation-delay: calc(${props => props.animationDuration}ms * 2 / -1.5);
-  }
-  .rhombus:nth-child(3) {
-    animation-delay: calc(${props => props.animationDuration}ms * 3 / -1.5);
-  }
-  @keyframes looping-rhombuses-spinner-animation {
-    0% {
-      transform: translateX(0) rotate(45deg) scale(0);
-    }
-    50% {
-      transform: translateX(-233%) rotate(45deg) scale(1);
-    }
-    100% {
-      transform: translateX(-466%) rotate(45deg) scale(0);
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicSpinnersProps = {
+  size?: number,
+  color?: string,
+  animationDuration?: number,
+  style?: ViewStyleProp
 };
 
-const defaultProps = {
-  size: 15,
-  color: '#fff',
-  animationDuration: 2500,
-  className: '',
+const EpicSpinnersDefaultProps = {
+  size: 30,
+  color: 'red',
+  animationDuration: 2500
 };
 
-function generateSpinners(num) {
-  return Array.from({ length: num }).map((val, index) => (
-    <div key={index} className="rhombus" />
-  ));
-}
+export const LoopingRhombusesSpinner = (props: EpicSpinnersProps): Element<any> => {
+  const { size, color, animationDuration, style } = props;
+  const [firstRhombuses] = useState(new Animated.Value(0));
+  const [secondRhombuses] = useState(new Animated.Value(0));
+  const [thirdRhombuses] = useState(new Animated.Value(0));
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size,
+      position: 'relative'
+    },
+    rhombus: {
+      height: size,
+      width: size,
+      backgroundColor: color,
+      position: 'absolute',
+      left: 50,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: size * 0.2
+    }
+  });
 
-const LoopingRhombusesSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => {
-  const num = 3;
+  const getAnimatedStyle = (animated) => {
+    return [
+      {
+        translateX: animated.interpolate({
+          inputRange: [0, 1, 2],
+          outputRange: [0, -50, -100]
+        })
+      },
+      {
+        scale: animated.interpolate({
+          inputRange: [0, 1, 2],
+          outputRange: [0, 1, 0]
+        })
+      },
+      {
+        rotate: '45deg'
+      }
+    ];
+  };
+  const animateStyle = {
+    firstRhombuses: {
+      transform: getAnimatedStyle(firstRhombuses)
+    },
+    secondRhombuses: {
+      transform: getAnimatedStyle(secondRhombuses)
+    },
+    thirdRhombuses: {
+      transform: getAnimatedStyle(thirdRhombuses)
+    }
+  };
+
+  useEffect(() => {
+    Animated.stagger(animationDuration * 0.3, [
+      Animated.loop(
+        Animated.timing(firstRhombuses, {
+          toValue: 2,
+          duration: animationDuration,
+          easing: Easing.linear
+        })
+      ),
+      Animated.loop(
+        Animated.timing(secondRhombuses, {
+          toValue: 2,
+          duration: animationDuration,
+          easing: Easing.linear
+        })
+      ),
+      Animated.loop(
+        Animated.timing(thirdRhombuses, {
+          toValue: 2,
+          duration: animationDuration,
+          easing: Easing.linear
+        })
+      )
+    ]).start();
+  }, [animationDuration, firstRhombuses, secondRhombuses, thirdRhombuses]);
 
   return (
-    <LoadingRhombus
-      size={size}
-      color={color}
-      animationDuration={animationDuration}
-      className={`looping-rhombuses-spinner${className ? ' ' + className : ''}`}
-      style={style}
-      {...props}
-    >
-      {generateSpinners(num)}
-    </LoadingRhombus>
+    <View style={style} {...props}>
+      <View style={spinnerStyle.container}>
+        <Animated.View style={[spinnerStyle.rhombus, animateStyle.firstRhombuses]} />
+        <Animated.View style={[spinnerStyle.rhombus, animateStyle.secondRhombuses]} />
+        <Animated.View style={[spinnerStyle.rhombus, animateStyle.thirdRhombuses]} />
+      </View>
+    </View>
   );
 };
 
-LoopingRhombusesSpinner.propTypes = propTypes;
-LoopingRhombusesSpinner.defaultProps = defaultProps;
-
-export default LoopingRhombusesSpinner;
+LoopingRhombusesSpinner.defaultProps = EpicSpinnersDefaultProps;
