@@ -1,96 +1,95 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const Spring = styled.div`
-  height: ${props => props.size}px;
-  width: ${props => props.size}px;
+import { useAnimated } from '../core/customHooks';
 
-  * {
-    box-sizing: border-box;
-  }
-
-  .spring-spinner-part {
-    overflow: hidden;
-    height: calc(${props => props.size}px / 2);
-    width: ${props => props.size}px;
-  }
-  .spring-spinner-part.bottom {
-    transform: rotate(180deg) scale(-1, 1);
-  }
-  .spring-spinner-rotator {
-    width: ${props => props.size}px;
-    height: ${props => props.size}px;
-    border: calc(${props => props.size}px / 7) solid transparent;
-    border-right-color: ${props => props.color};
-    border-top-color: ${props => props.color};
-    border-radius: 50%;
-    box-sizing: border-box;
-    animation: spring-spinner-animation ${props => props.animationDuration}ms
-      ease-in-out infinite;
-    transform: rotate(-200deg);
-  }
-  @keyframes spring-spinner-animation {
-    0% {
-      border-width: calc(${props => props.size}px / 7);
-    }
-    25% {
-      border-width: calc(${props => props.size}px / 23.33);
-    }
-    50% {
-      transform: rotate(115deg);
-      border-width: calc(${props => props.size}px / 7);
-    }
-    75% {
-      border-width: calc(${props => props.size}px / 23.33);
-    }
-    100% {
-      border-width: calc(${props => props.size}px / 7);
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicProps = {
+  size?: number,
+  animationDuration?: number,
+  color?: string,
+  style?: ViewStyleProp
 };
 
-const defaultProps = {
+const EpicSpinnersDefaultProps = {
   size: 70,
-  color: '#fff',
-  animationDuration: 3000,
-  className: '',
+  color: 'red',
+  animationDuration: 3000
 };
 
-const SpringSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => (
-  <Spring
-    size={size}
-    color={color}
-    animationDuration={animationDuration}
-    className={`spring-spinner${className ? ' ' + className : ''}`}
-    style={style}
-    {...props}
-  >
-    <div className="spring-spinner-part top">
-      <div className="spring-spinner-rotator" />
-    </div>
-    <div className="spring-spinner-part bottom">
-      <div className="spring-spinner-rotator" />
-    </div>
-  </Spring>
-);
+export const SpringSpinner = (props: EpicProps): Element<any> => {
+  const { size, animationDuration, color, style, ...restProps } = props;
+  const [rotator] = useAnimated();
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size
+    },
+    springSpinnerPart: {
+      overflow: 'hidden',
+      height: size / 2,
+      width: size
+    },
+    bottom: {
+      transform: [{ rotate: '180deg' }, { scaleX: -1 }, { scaleY: 1 }]
+    },
+    springSpinnerRotator: {
+      width: size,
+      height: size,
+      borderColor: 'transparent',
+      borderRightColor: color,
+      borderTopColor: color,
+      borderRadius: size
+    }
+  });
 
-SpringSpinner.propTypes = propTypes;
-SpringSpinner.defaultProps = defaultProps;
+  const getAnimatedTransformation = (animated) => {
+    const start = size / 7;
+    const end = size / 23.33;
+    return {
+      borderWidth: animated.interpolate({
+        inputRange: [0, 1, 2, 3, 4],
+        outputRange: [start, end, start, end, start]
+      }),
+      transform: [
+        {
+          rotate: animated.interpolate({
+            inputRange: [0, 1.8, 2, 3.8, 4],
+            outputRange: ['-200deg', '100deg', '115deg', '-185deg', '-200deg']
+          })
+        }
+      ]
+    };
+  };
 
-export default SpringSpinner;
+  const animatedStyle = {
+    rotator: getAnimatedTransformation(rotator)
+  };
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(rotator, {
+        toValue: 4,
+        duration: animationDuration,
+        easing: Easing.linear
+      })
+    ).start();
+  }, [animationDuration, rotator]);
+
+  return (
+    <View style={style} {...restProps}>
+      <View style={spinnerStyle.container}>
+        <View style={spinnerStyle.springSpinnerPart}>
+          <Animated.View style={[spinnerStyle.springSpinnerRotator, animatedStyle.rotator]} />
+        </View>
+        <View style={[spinnerStyle.springSpinnerPart, spinnerStyle.bottom]}>
+          <Animated.View style={[spinnerStyle.springSpinnerRotator, animatedStyle.rotator]} />
+        </View>
+      </View>
+    </View>
+  );
+};
+
+SpringSpinner.defaultProps = EpicSpinnersDefaultProps;
