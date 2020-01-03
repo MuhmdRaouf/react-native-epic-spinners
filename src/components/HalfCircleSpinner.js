@@ -1,82 +1,104 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect, useState } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const HalfSpinner = styled.div`
-  width: ${props => props.size}px;
-  height: ${props => props.size}px;
-  border-radius: 100%;
-  position: relative;
-
-  * {
-    box-sizing: border-box;
-  }
-
-  .circle {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 100%;
-    border: calc(${props => props.size}px / 10) solid transparent;
-  }
-  .circle.circle-1 {
-    border-top-color: ${props => props.color};
-    animation: half-circle-spinner-animation
-      ${props => props.animationDuration}ms infinite;
-  }
-  .circle.circle-2 {
-    border-bottom-color: ${props => props.color};
-    animation: half-circle-spinner-animation
-      ${props => props.animationDuration}ms infinite alternate;
-  }
-  @keyframes half-circle-spinner-animation {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicProps = {
+  size?: number,
+  animationDuration?: number,
+  color?: string,
+  style?: ViewStyleProp
 };
-
-const defaultProps = {
+const EpicSpinnersDefaultProps = {
   size: 60,
-  color: '#fff',
-  animationDuration: 1000,
-  className: '',
+  color: 'red',
+  animationDuration: 1000
 };
 
-const HalfCircleSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => (
-  <HalfSpinner
-    size={size}
-    color={color}
-    animationDuration={animationDuration}
-    className={`half-circle-spinner${className ? ' ' + className : ''}`}
-    style={style}
-    {...props}
-  >
-    <div className="circle circle-1" />
-    <div className="circle circle-2" />
-  </HalfSpinner>
-);
+export const HalfCircleSpinner = (props: EpicProps): Element<any> => {
+  const { size, animationDuration, color, style } = props;
+  const [firstInnerCircle] = useState(new Animated.Value(0));
+  const [secondInnerCircle] = useState(new Animated.Value(0));
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size,
+      position: 'relative',
+      borderRadius: size
+    },
+    circle: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      borderRadius: size,
+      borderWidth: size / 10,
+      borderColor: 'transparent'
+    },
+    firstInnerCircle: {
+      borderTopColor: color
+    },
+    secondInnerCircle: {
+      borderBottomColor: color
+    }
+  });
+  const animateStyle = {
+    firstInnerCircle: {
+      transform: [
+        {
+          rotate: firstInnerCircle.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['0deg', '360deg']
+          })
+        }
+      ]
+    },
+    secondInnerCircle: {
+      transform: [
+        {
+          rotate: secondInnerCircle.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['360deg', '0deg']
+          })
+        }
+      ]
+    }
+  };
 
-HalfCircleSpinner.propTypes = propTypes;
-HalfCircleSpinner.defaultProps = defaultProps;
+  useEffect(() => {
+    Animated.parallel([
+      Animated.loop(
+        Animated.timing(firstInnerCircle, {
+          toValue: 1,
+          duration: animationDuration,
+          easing: Easing.linear
+        })
+      ),
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(secondInnerCircle, {
+            toValue: 1,
+            duration: animationDuration,
+            easing: Easing.quad
+          }),
+          Animated.timing(secondInnerCircle, {
+            toValue: 0,
+            duration: animationDuration,
+            easing: Easing.linear
+          })
+        ])
+      )
+    ]).start();
+  }, [animationDuration, firstInnerCircle, secondInnerCircle]);
 
-export default HalfCircleSpinner;
+  return (
+    <View style={style} {...props}>
+      <View style={spinnerStyle.container}>
+        <Animated.View style={[spinnerStyle.circle, spinnerStyle.firstInnerCircle, animateStyle.firstInnerCircle]} />
+        <Animated.View style={[spinnerStyle.circle, spinnerStyle.secondInnerCircle, animateStyle.secondInnerCircle]} />
+      </View>
+    </View>
+  );
+};
+
+HalfCircleSpinner.defaultProps = EpicSpinnersDefaultProps;
