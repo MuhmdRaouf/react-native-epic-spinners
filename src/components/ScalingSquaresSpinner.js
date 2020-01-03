@@ -1,117 +1,122 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const ScalingSquares = styled.div`
-  height: ${props => props.size}px;
-  width: ${props => props.size}px;
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  animation: scaling-squares-animation ${props => props.animationDuration}ms;
-  animation-iteration-count: infinite;
-  transform: rotate(0deg);
+import { useAnimated } from '../core/customHooks';
 
-  * {
-    box-sizing: border-box;
-  }
-
-  .square {
-    height: calc(${props => props.size}px * 0.25 / 1.3);
-    width: calc(${props => props.size}px * 0.25 / 1.3);
-    margin-right: auto;
-    margin-left: auto;
-    border: calc(${props => props.size}px * 0.04 / 1.3) solid ${props => props.color};
-    position: absolute;
-    animation-duration: ${props => props.animationDuration}ms;
-    animation-iteration-count: infinite;
-  }
-  .square:nth-child(1) {
-    animation-name: scaling-squares-spinner-animation-child-1;
-  }
-  .square:nth-child(2) {
-    animation-name: scaling-squares-spinner-animation-child-2;
-  }
-  .square:nth-child(3) {
-    animation-name: scaling-squares-spinner-animation-child-3;
-  }
-  .square:nth-child(4) {
-    animation-name: scaling-squares-spinner-animation-child-4;
-  }
-  @keyframes scaling-squares-animation {
-    50% {
-      transform: rotate(90deg);
-    }
-    100% {
-      transform: rotate(180deg);
-    }
-  }
-  @keyframes scaling-squares-spinner-animation-child-1 {
-    50% {
-      transform: translate(150%, 150%) scale(2, 2);
-    }
-  }
-  @keyframes scaling-squares-spinner-animation-child-2 {
-    50% {
-      transform: translate(-150%, 150%) scale(2, 2);
-    }
-  }
-  @keyframes scaling-squares-spinner-animation-child-3 {
-    50% {
-      transform: translate(-150%, -150%) scale(2, 2);
-    }
-  }
-  @keyframes scaling-squares-spinner-animation-child-4 {
-    50% {
-      transform: translate(150%, -150%) scale(2, 2);
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicProps = {
+  size?: number,
+  animationDuration?: number,
+  color?: string,
+  style?: ViewStyleProp
 };
 
-const defaultProps = {
+const EpicSpinnersDefaultProps = {
   size: 65,
-  color: '#fff',
-  animationDuration: 1250,
-  className: '',
+  color: 'red',
+  animationDuration: 1250
 };
 
-function generateSpinners(num) {
-  return Array.from({ length: num }).map((val, index) => (
-    <div key={index} className="square" />
-  ));
-}
+export const ScalingSquaresSpinner = (props: EpicProps): Element<any> => {
+  const { size, animationDuration, color, style } = props;
+  const [container, firstSquare, secondSquare, thirdSquare, forthSquare] = useAnimated(5);
+  const axisDirection = { center: 0, positive: size * 0.15, negative: size * -0.15 };
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size,
+      position: 'relative',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    square: {
+      height: (size * 0.25) / 1.3,
+      width: (size * 0.25) / 1.3,
+      borderWidth: (size * 0.04) / 1.3,
+      borderColor: color,
+      position: 'absolute',
+      marginRight: 'auto',
+      marginLeft: 'auto'
+    }
+  });
 
-const ScalingSquaresSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => (
-  <ScalingSquares
-    size={size}
-    color={color}
-    animationDuration={animationDuration}
-    className={`scaling-squares-spinner${className ? ' ' + className : ''}`}
-    style={style}
-    {...props}
-  >
-    {generateSpinners(4)}
-  </ScalingSquares>
-);
+  const getTransformRotation = (animated) => {
+    return {
+      transform: [
+        {
+          rotate: animated.interpolate({
+            inputRange: [0, 1, 1.2, 2.2, 2.4],
+            outputRange: ['0deg', '90deg', '90deg', '180deg', '180deg']
+          })
+        }
+      ]
+    };
+  };
+  const getSquareTransformation = (animated, translateX, translateY) => {
+    return {
+      transform: [
+        {
+          scale: animated.interpolate({
+            inputRange: [0, 1, 1.2, 2.2, 2.4],
+            outputRange: [1, 2, 2, 1, 1]
+          })
+        },
+        {
+          translateX: animated.interpolate({
+            inputRange: [0, 1, 1.2, 2.2, 2.4],
+            outputRange: [axisDirection.center, translateX, translateX, axisDirection.center, axisDirection.center]
+          })
+        },
+        {
+          translateY: animated.interpolate({
+            inputRange: [0, 1, 1.2, 2.2, 2.4],
+            outputRange: [axisDirection.center, translateY, translateY, axisDirection.center, axisDirection.center]
+          })
+        }
+      ]
+    };
+  };
 
-ScalingSquaresSpinner.propTypes = propTypes;
-ScalingSquaresSpinner.defaultProps = defaultProps;
+  const animatedStyle = {
+    container: getTransformRotation(container),
+    firstSquare: getSquareTransformation(firstSquare, axisDirection.positive, axisDirection.positive),
+    secondSquare: getSquareTransformation(secondSquare, axisDirection.positive, axisDirection.negative),
+    thirdSquare: getSquareTransformation(thirdSquare, axisDirection.negative, axisDirection.positive),
+    forthSquare: getSquareTransformation(forthSquare, axisDirection.negative, axisDirection.negative)
+  };
 
-export default ScalingSquaresSpinner;
+  useEffect(() => {
+    const parallelAnimation = (animated) => {
+      return Animated.timing(animated, {
+        toValue: 2.4,
+        duration: animationDuration,
+        easing: Easing.linear
+      });
+    };
+    Animated.loop(
+      Animated.parallel([
+        parallelAnimation(container),
+        parallelAnimation(firstSquare),
+        parallelAnimation(secondSquare),
+        parallelAnimation(thirdSquare),
+        parallelAnimation(forthSquare)
+      ])
+    ).start();
+  }, [animationDuration, container, firstSquare, forthSquare, secondSquare, thirdSquare]);
+
+  return (
+    <View style={style} {...props}>
+      <Animated.View style={[spinnerStyle.container, animatedStyle.container]}>
+        <Animated.View style={[spinnerStyle.square, animatedStyle.firstSquare]} />
+        <Animated.View style={[spinnerStyle.square, animatedStyle.secondSquare]} />
+        <Animated.View style={[spinnerStyle.square, animatedStyle.thirdSquare]} />
+        <Animated.View style={[spinnerStyle.square, animatedStyle.forthSquare]} />
+      </Animated.View>
+    </View>
+  );
+};
+
+ScalingSquaresSpinner.defaultProps = EpicSpinnersDefaultProps;
