@@ -1,121 +1,110 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const Trinity = styled.div`
-  height: ${props => props.size}px;
-  width: ${props => props.size}px;
-  padding: 3px;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
-  overflow: hidden;
-  box-sizing: border-box;
+import { useAnimated } from '../core/customHooks';
+import type AnimatedInterpolation from 'react-native/Libraries/Animated/src/nodes/AnimatedInterpolation';
 
-  * {
-    box-sizing: border-box;
-  }
-
-  .circle {
-    position: absolute;
-    display: block;
-    border-radius: 50%;
-    border: 3px solid ${props => props.color};
-    opacity: 1;
-  }
-  .circle:nth-child(1) {
-    height: ${props => props.outerWidth}px;
-    width: ${props => props.outerWidth}px;
-    animation: trinity-rings-spinner-circle1-animation
-      ${props => props.animationDuration}ms infinite linear;
-    border-width: 3px;
-  }
-  .circle:nth-child(2) {
-    height: calc(${props => props.outerWidth}px * 0.65);
-    width: calc(${props => props.outerWidth}px * 0.65);
-    animation: trinity-rings-spinner-circle2-animation
-      ${props => props.animationDuration}ms infinite linear;
-    border-width: 2px;
-  }
-  .circle:nth-child(3) {
-    height: calc(${props => props.outerWidth}px * 0.1);
-    width: calc(${props => props.outerWidth}px * 0.1);
-    animation: trinity-rings-spinner-circle3-animation
-      ${props => props.animationDuration}ms infinite linear;
-    border-width: 1px;
-  }
-  @keyframes trinity-rings-spinner-circle1-animation {
-    0% {
-      transform: rotateZ(20deg) rotateY(0deg);
-    }
-    100% {
-      transform: rotateZ(100deg) rotateY(360deg);
-    }
-  }
-  @keyframes trinity-rings-spinner-circle2-animation {
-    0% {
-      transform: rotateZ(100deg) rotateX(0deg);
-    }
-    100% {
-      transform: rotateZ(0deg) rotateX(360deg);
-    }
-  }
-  @keyframes trinity-rings-spinner-circle3-animation {
-    0% {
-      transform: rotateZ(100deg) rotateX(-360deg);
-    }
-    100% {
-      transform: rotateZ(-360deg) rotateX(360deg);
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicProps = {
+  size?: number,
+  animationDuration?: number,
+  color?: string,
+  style?: ViewStyleProp
+};
+type TransformationTypeProp = {
+  rotateX?: string | AnimatedInterpolation,
+  rotateY?: string | AnimatedInterpolation,
+  rotateZ?: string | AnimatedInterpolation
+};
+const EpicSpinnersDefaultProps = {
+  size: 150,
+  color: 'red',
+  animationDuration: 1500
 };
 
-const defaultProps = {
-  size: 66,
-  color: '#fff',
-  animationDuration: 1500,
-  className: '',
-};
-
-const TrinityRingsSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => {
+export const TrinityRingsSpinner = (props: EpicProps): Element<any> => {
+  const { size, animationDuration, color, style, ...restProps } = props;
   const containerPadding = 3;
-  const outerWidth = size - containerPadding * 2;
+  const outerSize = size - containerPadding;
+  const [anim] = useAnimated();
+  const getAnimatedTransformation = ({
+    rotateX = '0deg',
+    rotateY = '0deg',
+    rotateZ = '0deg'
+  }: TransformationTypeProp) => {
+    return { transform: [{ rotateX }, { rotateY }, { rotateZ }] };
+  };
+
+  const circle1RotateX = anim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
+  const circle1RotateY = anim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
+  const circle1RotateZ = anim.interpolate({ inputRange: [0, 1], outputRange: ['20deg', '100deg'] });
+
+  const circle2RotateX = anim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
+  const circle2RotateY = anim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
+  const circle2RotateZ = anim.interpolate({ inputRange: [0, 1], outputRange: ['100deg', '0deg'] });
+
+  const circle3RotateX = anim.interpolate({ inputRange: [0, 1], outputRange: ['360deg', '-360deg'] });
+  const circle3RotateY = anim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '-180deg'] });
+  const circle3RotateZ = anim.interpolate({ inputRange: [0, 1], outputRange: ['100deg', '-360deg'] });
+
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size,
+      padding: 3,
+      position: 'relative',
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden'
+    },
+    circle: {
+      position: 'absolute',
+      borderRadius: size,
+      borderColor: color
+    },
+    circle1: {
+      height: outerSize,
+      width: outerSize,
+      borderWidth: 9
+    },
+    circle2: {
+      height: outerSize * 0.65,
+      width: outerSize * 0.65,
+      borderWidth: 6
+    },
+    circle3: {
+      height: outerSize * 0.1,
+      width: outerSize * 0.1,
+      borderWidth: 3
+    }
+  });
+  const animateStyle = {
+    circle1: getAnimatedTransformation({ rotateX: circle1RotateX, rotateY: circle1RotateY, rotateZ: circle1RotateZ }),
+    circle2: getAnimatedTransformation({ rotateX: circle2RotateX, rotateY: circle2RotateY, rotateZ: circle2RotateZ }),
+    circle3: getAnimatedTransformation({ rotateX: circle3RotateX, rotateY: circle3RotateY, rotateZ: circle3RotateZ })
+  };
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(anim, {
+        toValue: 1,
+        duration: animationDuration,
+        easing: Easing.linear
+      })
+    ).start();
+  }, [animationDuration, anim]);
 
   return (
-    <Trinity
-      size={size}
-      color={color}
-      animationDuration={animationDuration}
-      className={`trinity-rings-spinner${className ? ' ' + className : ''}`}
-      style={style}
-      outerWidth={outerWidth}
-      {...props}
-    >
-      <div className="circle circle1" />
-      <div className="circle circle2" />
-      <div className="circle circle3" />
-    </Trinity>
+    <View style={style} {...restProps}>
+      <View style={spinnerStyle.container}>
+        <Animated.View style={[spinnerStyle.circle, spinnerStyle.circle1, animateStyle.circle1]} />
+        <Animated.View style={[spinnerStyle.circle, spinnerStyle.circle2, animateStyle.circle2]} />
+        <Animated.View style={[spinnerStyle.circle, spinnerStyle.circle3, animateStyle.circle3]} />
+      </View>
+    </View>
   );
 };
 
-TrinityRingsSpinner.propTypes = propTypes;
-TrinityRingsSpinner.defaultProps = defaultProps;
-
-export default TrinityRingsSpinner;
+TrinityRingsSpinner.defaultProps = EpicSpinnersDefaultProps;
