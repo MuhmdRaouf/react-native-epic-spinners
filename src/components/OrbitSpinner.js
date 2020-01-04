@@ -2,21 +2,16 @@
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
 import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
-import type AnimatedInterpolation from 'react-native/Libraries/Animated/src/nodes/AnimatedInterpolation';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
 import { useAnimated } from '../core/customHooks';
+import { getAnimatedTransformation } from '../core/StylingUtils';
 
 type EpicProps = {
   size?: number,
   animationDuration?: number,
   color?: string,
   style?: ViewStyleProp
-};
-type TransformationTypeProp = {
-  rotateX: string | AnimatedInterpolation,
-  rotateY: string | AnimatedInterpolation,
-  rotateZ: string | AnimatedInterpolation
 };
 const EpicSpinnersDefaultProps = {
   size: 250,
@@ -29,9 +24,6 @@ export const OrbitSpinner = (props: EpicProps): Element<any> => {
   const spinnerWidth = size * 0.05;
   const [orbitLine] = useAnimated();
   const animatedOrbitLine = orbitLine.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
-  const getAnimatedTransformation = ({ rotateX, rotateY, rotateZ }: TransformationTypeProp) => {
-    return { transform: [{ rotateX }, { rotateY }, { rotateZ }] };
-  };
   const getOrbitView = () => {
     return ['firstOrbitLine', 'secondOrbitLine', 'thirdOrbitLine'].map((styleClassName, index) => {
       return (

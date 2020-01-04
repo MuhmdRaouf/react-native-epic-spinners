@@ -1,111 +1,218 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+/** @flow **/
+import type { Element } from 'react';
+import React, { useEffect } from 'react';
+import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-const SwappingSquare = styled.div`
-  height: ${props => props.size}px;
-  width: ${props => props.size}px;
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
+import { useAnimated } from '../core/customHooks';
 
-  * {
-    box-sizing: border-box;
-  }
-
-  .square {
-    height: calc(${props => props.size}px * 0.25 / 1.3);
-    width: calc(${props => props.size}px * 0.25 / 1.3);
-    animation-duration: ${props => props.animationDuration}ms;
-    border: calc(${props => props.size}px * 0.04 / 1.3) solid
-      ${props => props.color};
-    margin-right: auto;
-    margin-left: auto;
-    position: absolute;
-    animation-iteration-count: infinite;
-  }
-  .square:nth-child(1) {
-    animation-name: swapping-squares-animation-child-1;
-    animation-delay: ${props => props.animationDuration * 0.5}ms;
-  }
-  .square:nth-child(2) {
-    animation-name: swapping-squares-animation-child-2;
-    animation-delay: 0ms;
-  }
-  .square:nth-child(3) {
-    animation-name: swapping-squares-animation-child-3;
-    animation-delay: ${props => props.animationDuration * 0.5}ms;
-  }
-  .square:nth-child(4) {
-    animation-name: swapping-squares-animation-child-4;
-    animation-delay: 0ms;
-  }
-  @keyframes swapping-squares-animation-child-1 {
-    50% {
-      transform: translate(150%, 150%) scale(2, 2);
-    }
-  }
-  @keyframes swapping-squares-animation-child-2 {
-    50% {
-      transform: translate(-150%, 150%) scale(2, 2);
-    }
-  }
-  @keyframes swapping-squares-animation-child-3 {
-    50% {
-      transform: translate(-150%, -150%) scale(2, 2);
-    }
-  }
-  @keyframes swapping-squares-animation-child-4 {
-    50% {
-      transform: translate(150%, -150%) scale(2, 2);
-    }
-  }
-`;
-
-const propTypes = {
-  size: PropTypes.number,
-  animationDuration: PropTypes.number,
-  color: PropTypes.string,
-  className: PropTypes.string,
-  style: PropTypes.object,
+type EpicProps = {
+  size?: number,
+  animationDuration?: number,
+  color?: string,
+  style?: ViewStyleProp
 };
 
-const defaultProps = {
+const EpicSpinnersDefaultProps = {
   size: 65,
-  color: '#fff',
-  animationDuration: 1000,
-  className: '',
+  color: 'red',
+  animationDuration: 1000
 };
 
-function generateSpinners(num) {
-  return Array.from({ length: num }).map((val, index) => (
-    <div key={index} className="square" />
-  ));
-}
+export const SwappingSquaresSpinner = (props: EpicProps): Element<any> => {
+  const { size, animationDuration, color, style, ...restProps } = props;
+  const [rightAnimation, leftAnimation] = useAnimated(2);
+  const axisDirection = {
+    center: 0,
+    positive: size * 0.65,
+    negative: size * -0.65,
+    slowPositive: size * 0.7,
+    slowNegative: size * -0.7
+  };
+  const generateSpinners = () => {
+    return ['square1', 'square2', 'square3', 'square4'].map((val, index) => (
+      <Animated.View key={index} style={[spinnerStyle.square, animatedStyle[val]]} />
+    ));
+  };
 
-const SwappingSquaresSpinner = ({
-  size,
-  color,
-  animationDuration,
-  className,
-  style,
-  ...props
-}) => (
-  <SwappingSquare
-    size={size}
-    color={color}
-    animationDuration={animationDuration}
-    className={`swapping-squares-spinner${className ? ' ' + className : ''}`}
-    style={style}
-    {...props}
-  >
-    {generateSpinners(4)}
-  </SwappingSquare>
-);
+  const spinnerStyle = StyleSheet.create({
+    container: {
+      height: size,
+      width: size,
+      position: 'relative',
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    square: {
+      height: '100%',
+      width: '100%',
+      position: 'absolute',
+      borderColor: color,
+      borderWidth: size * 0.2
+    }
+  });
 
-SwappingSquaresSpinner.propTypes = propTypes;
-SwappingSquaresSpinner.defaultProps = defaultProps;
+  const animatedStyle = {
+    square1: {
+      transform: [
+        {
+          translateX: rightAnimation.interpolate({
+            inputRange: [0, 0.8, 1, 2, 3],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.negative,
+              axisDirection.slowNegative,
+              axisDirection.slowNegative,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          translateY: rightAnimation.interpolate({
+            inputRange: [0, 0.8, 1, 2, 3],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.negative,
+              axisDirection.slowNegative,
+              axisDirection.slowNegative,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          scale: rightAnimation.interpolate({
+            inputRange: [0, 1, 2, 3],
+            outputRange: [0.5, 1, 1, 0.5]
+          })
+        }
+      ]
+    },
+    square2: {
+      transform: [
+        {
+          translateX: rightAnimation.interpolate({
+            inputRange: [0, 0.8, 1, 2, 3],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.positive,
+              axisDirection.slowPositive,
+              axisDirection.slowPositive,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          translateY: rightAnimation.interpolate({
+            inputRange: [0, 0.8, 1, 2, 3],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.positive,
+              axisDirection.slowPositive,
+              axisDirection.slowPositive,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          scale: rightAnimation.interpolate({
+            inputRange: [0, 1, 2, 3],
+            outputRange: [0.5, 1, 1, 0.5]
+          })
+        }
+      ]
+    },
+    square3: {
+      transform: [
+        {
+          translateX: leftAnimation.interpolate({
+            inputRange: [0, 0.8, 1, 2, 3],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.positive,
+              axisDirection.slowPositive,
+              axisDirection.slowPositive,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          translateY: leftAnimation.interpolate({
+            inputRange: [0, 0.8, 1, 2, 3],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.negative,
+              axisDirection.slowNegative,
+              axisDirection.slowNegative,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          scale: leftAnimation.interpolate({
+            inputRange: [0, 1, 2, 3],
+            outputRange: [0.5, 1, 1, 0.5]
+          })
+        }
+      ]
+    },
+    square4: {
+      transform: [
+        {
+          translateX: leftAnimation.interpolate({
+            inputRange: [0, 0.8, 1, 2, 3],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.negative,
+              axisDirection.slowNegative,
+              axisDirection.slowNegative,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          translateY: leftAnimation.interpolate({
+            inputRange: [0, 0.8, 1, 2, 3],
+            outputRange: [
+              axisDirection.center,
+              axisDirection.positive,
+              axisDirection.slowPositive,
+              axisDirection.slowPositive,
+              axisDirection.center
+            ]
+          })
+        },
+        {
+          scale: leftAnimation.interpolate({
+            inputRange: [0, 1, 2, 3],
+            outputRange: [0.5, 1, 1, 0.5]
+          })
+        }
+      ]
+    }
+  };
 
-export default SwappingSquaresSpinner;
+  useEffect(() => {
+    Animated.stagger(animationDuration * 0.5, [
+      Animated.loop(
+        Animated.timing(rightAnimation, {
+          toValue: 3,
+          duration: animationDuration,
+        })
+      ),
+      Animated.loop(
+        Animated.timing(leftAnimation, {
+          toValue: 3,
+          duration: animationDuration,
+        })
+      )
+    ]).start();
+  }, [rightAnimation, animationDuration, leftAnimation]);
+
+  return (
+    <View style={style} {...restProps}>
+      <View style={spinnerStyle.container}>{generateSpinners(4)}</View>
+    </View>
+  );
+};
+
+SwappingSquaresSpinner.defaultProps = EpicSpinnersDefaultProps;

@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { SpringSpinner } from './src/components/SpringSpinner';
+import { SwappingSquaresSpinner } from './src/components/SwappingSquaresSpinner';
 
 const App: () => React$Node = () => {
   const style = StyleSheet.create({
@@ -16,7 +16,7 @@ const App: () => React$Node = () => {
   });
   return (
     <View style={style.container}>
-      <SpringSpinner />
+      <SwappingSquaresSpinner />
     </View>
   );
 };
