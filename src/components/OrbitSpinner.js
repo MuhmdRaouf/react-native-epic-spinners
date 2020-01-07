@@ -1,66 +1,48 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
 import { getAnimatedTransformation } from '../core/StylingUtils';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
-const EpicSpinnersDefaultProps = {
-  size: 250,
-  color: 'red',
-  animationDuration: 1000
-};
-
-export const OrbitSpinner = (props: EpicProps): Element<any> => {
-  const { size, animationDuration, color, style } = props;
-  const spinnerWidth = size * 0.05;
+export function OrbitSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 5;
+  const spinnerWidth = containerSize * 0.05;
   const [orbitLine] = useAnimated();
+  const VIEWS = useAnimatedViewsNameGenerator('orbitLine', 3);
   const animatedOrbitLine = orbitLine.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
-  const getOrbitView = () => {
-    return ['firstOrbitLine', 'secondOrbitLine', 'thirdOrbitLine'].map((styleClassName, index) => {
-      return (
-        <Animated.View
-          key={index}
-          style={[spinnerStyle.orbit, spinnerStyle[styleClassName], animateStyle[styleClassName]]}
-        />
-      );
-    });
-  };
 
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size,
-      borderRadius: size * 0.5,
+      height: containerSize,
+      width: containerSize,
+      borderRadius: containerSize * 0.5,
       transform: [{ perspective: 800 }]
     },
     orbit: {
       position: 'absolute',
       width: '100%',
       height: '100%',
-      borderRadius: size * 0.5
+      borderRadius: containerSize * 0.5
     },
-    firstOrbitLine: {
+    orbitLine1: {
       left: 0,
       top: 0,
       borderBottomWidth: spinnerWidth,
       borderBottomColor: color
     },
-    secondOrbitLine: {
+    orbitLine2: {
       right: 0,
       top: 0,
       borderRightWidth: spinnerWidth,
       borderRightColor: color
     },
-    thirdOrbitLine: {
+    orbitLine3: {
       right: 0,
       bottom: 0,
       borderTopWidth: spinnerWidth,
@@ -68,10 +50,10 @@ export const OrbitSpinner = (props: EpicProps): Element<any> => {
     }
   });
 
-  const animateStyle = {
-    firstOrbitLine: getAnimatedTransformation({ rotateX: '35deg', rotateY: '-45deg', rotateZ: animatedOrbitLine }),
-    secondOrbitLine: getAnimatedTransformation({ rotateX: '50deg', rotateY: '10deg', rotateZ: animatedOrbitLine }),
-    thirdOrbitLine: getAnimatedTransformation({ rotateX: '35deg', rotateY: '55deg', rotateZ: animatedOrbitLine })
+  const animatedStyle = {
+    orbitLine1: getAnimatedTransformation({ rotateX: '35deg', rotateY: '-45deg', rotateZ: animatedOrbitLine }),
+    orbitLine2: getAnimatedTransformation({ rotateX: '50deg', rotateY: '10deg', rotateZ: animatedOrbitLine }),
+    orbitLine3: getAnimatedTransformation({ rotateX: '35deg', rotateY: '55deg', rotateZ: animatedOrbitLine })
   };
 
   useEffect(() => {
@@ -85,10 +67,17 @@ export const OrbitSpinner = (props: EpicProps): Element<any> => {
   }, [animationDuration, orbitLine]);
 
   return (
-    <View style={style} {...props}>
-      <View style={spinnerStyle.container}>{getOrbitView()}</View>
+    <View style={style} {...restProps}>
+      <View style={spinnerStyle.container}>
+        <GenerateAnimatedViews
+          animatedViewsArray={VIEWS}
+          animatedStyle={animatedStyle}
+          spinnerStyle={spinnerStyle}
+          style={spinnerStyle.orbit}
+        />
+      </View>
     </View>
   );
-};
+}
 
 OrbitSpinner.defaultProps = EpicSpinnersDefaultProps;

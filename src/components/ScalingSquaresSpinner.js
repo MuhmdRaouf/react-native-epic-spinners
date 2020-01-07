@@ -1,41 +1,32 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
-
-const EpicSpinnersDefaultProps = {
-  size: 65,
-  color: 'red',
-  animationDuration: 1250
-};
-
-export const ScalingSquaresSpinner = (props: EpicProps): Element<any> => {
-  const { size, animationDuration, color, style } = props;
+export function ScalingSquaresSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 3;
+  const axisDirection = { center: 0, positive: containerSize * 0.15, negative: containerSize * -0.15 };
   const [container, firstSquare, secondSquare, thirdSquare, forthSquare] = useAnimated(5);
-  const axisDirection = { center: 0, positive: size * 0.15, negative: size * -0.15 };
+  const VIEWS = useAnimatedViewsNameGenerator('square', 4);
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       position: 'relative',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center'
     },
     square: {
-      height: (size * 0.25) / 1.3,
-      width: (size * 0.25) / 1.3,
-      borderWidth: (size * 0.04) / 1.3,
+      height: (containerSize * 0.25) / 1.3,
+      width: (containerSize * 0.25) / 1.3,
+      borderWidth: (containerSize * 0.04) / 1.3,
       borderColor: color,
       position: 'absolute',
       marginRight: 'auto',
@@ -82,10 +73,10 @@ export const ScalingSquaresSpinner = (props: EpicProps): Element<any> => {
 
   const animatedStyle = {
     container: getTransformRotation(container),
-    firstSquare: getSquareTransformation(firstSquare, axisDirection.positive, axisDirection.positive),
-    secondSquare: getSquareTransformation(secondSquare, axisDirection.positive, axisDirection.negative),
-    thirdSquare: getSquareTransformation(thirdSquare, axisDirection.negative, axisDirection.positive),
-    forthSquare: getSquareTransformation(forthSquare, axisDirection.negative, axisDirection.negative)
+    square1: getSquareTransformation(firstSquare, axisDirection.positive, axisDirection.positive),
+    square2: getSquareTransformation(secondSquare, axisDirection.positive, axisDirection.negative),
+    square3: getSquareTransformation(thirdSquare, axisDirection.negative, axisDirection.positive),
+    square4: getSquareTransformation(forthSquare, axisDirection.negative, axisDirection.negative)
   };
 
   useEffect(() => {
@@ -108,15 +99,12 @@ export const ScalingSquaresSpinner = (props: EpicProps): Element<any> => {
   }, [animationDuration, container, firstSquare, forthSquare, secondSquare, thirdSquare]);
 
   return (
-    <View style={style} {...props}>
+    <View style={style} {...restProps}>
       <Animated.View style={[spinnerStyle.container, animatedStyle.container]}>
-        <Animated.View style={[spinnerStyle.square, animatedStyle.firstSquare]} />
-        <Animated.View style={[spinnerStyle.square, animatedStyle.secondSquare]} />
-        <Animated.View style={[spinnerStyle.square, animatedStyle.thirdSquare]} />
-        <Animated.View style={[spinnerStyle.square, animatedStyle.forthSquare]} />
+        <GenerateAnimatedViews animatedViewsArray={VIEWS} animatedStyle={animatedStyle} style={spinnerStyle.square} />
       </Animated.View>
     </View>
   );
-};
+}
 
 ScalingSquaresSpinner.defaultProps = EpicSpinnersDefaultProps;

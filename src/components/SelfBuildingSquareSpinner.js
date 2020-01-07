@@ -1,40 +1,30 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated } from '../core/CustomHooks';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
-
-const EpicSpinnersDefaultProps = {
-  size: 40,
-  color: 'red',
-  animationDuration: 5000
-};
-
-export const SelfBuildingSquareSpinner = (props: EpicProps): Element<any> => {
-  const { size, animationDuration, color, style } = props;
+export function SelfBuildingSquareSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 2.5;
   const [square1, square2, square3, square4, square5, square6, square7, square8, square9] = useAnimated(9);
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size
+      height: containerSize,
+      width: containerSize
     },
     squareContainer: {
       flexDirection: 'row'
     },
     square: {
-      height: size / 4,
-      width: size / 4,
-      marginRight: size / 4,
-      marginTop: size / 4,
+      height: containerSize / 4,
+      width: containerSize / 4,
+      marginRight: containerSize / 4,
+      marginTop: containerSize / 4,
       backgroundColor: color,
       position: 'relative'
     }
@@ -51,7 +41,6 @@ export const SelfBuildingSquareSpinner = (props: EpicProps): Element<any> => {
       })
     };
   };
-
   const animatedStyle = {
     square1: getAnimatedStyle(square1),
     square2: getAnimatedStyle(square2),
@@ -89,26 +78,32 @@ export const SelfBuildingSquareSpinner = (props: EpicProps): Element<any> => {
   }, [animationDuration, square1, square2, square3, square4, square5, square6, square7, square8, square9]);
 
   return (
-    <View style={style} {...props}>
+    <View style={style} {...restProps}>
       <View style={spinnerStyle.container}>
         <View style={spinnerStyle.squareContainer}>
-          <Animated.View style={[spinnerStyle.square, animatedStyle.square1]} />
-          <Animated.View style={[spinnerStyle.square, animatedStyle.square2]} />
-          <Animated.View style={[spinnerStyle.square, animatedStyle.square3]} />
+          <GenerateAnimatedViews
+            animatedViewsArray={['square1', 'square2', 'square3']}
+            animatedStyle={animatedStyle}
+            style={spinnerStyle.square}
+          />
         </View>
         <View style={spinnerStyle.squareContainer}>
-          <Animated.View style={[spinnerStyle.square, animatedStyle.square4]} />
-          <Animated.View style={[spinnerStyle.square, animatedStyle.square5]} />
-          <Animated.View style={[spinnerStyle.square, animatedStyle.square6]} />
+          <GenerateAnimatedViews
+            animatedViewsArray={['square4', 'square5', 'square6']}
+            animatedStyle={animatedStyle}
+            style={spinnerStyle.square}
+          />
         </View>
         <View style={spinnerStyle.squareContainer}>
-          <Animated.View style={[spinnerStyle.square, animatedStyle.square7]} />
-          <Animated.View style={[spinnerStyle.square, animatedStyle.square8]} />
-          <Animated.View style={[spinnerStyle.square, animatedStyle.square9]} />
+          <GenerateAnimatedViews
+            animatedViewsArray={['square7', 'square8', 'square9']}
+            animatedStyle={animatedStyle}
+            style={spinnerStyle.square}
+          />
         </View>
       </View>
     </View>
   );
-};
+}
 
 SelfBuildingSquareSpinner.defaultProps = EpicSpinnersDefaultProps;

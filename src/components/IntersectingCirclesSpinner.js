@@ -1,79 +1,70 @@
 /** @flow **/
 import type { Element } from 'react';
-import React, { useEffect, useState } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import React, { useEffect } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicSpinnersProps = {
-  size?: number,
-  color?: string,
-  animationDuration?: number,
-  style?: ViewStyleProp
-};
-
-const EpicSpinnersDefaultProps = {
-  size: 70,
-  color: 'red',
-  animationDuration: 2500
-};
-
-export const IntersectingCirclesSpinner = (props: EpicSpinnersProps): Element<any> => {
-  const { size, color, animationDuration, style } = props;
+export function IntersectingCirclesSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 3;
+  const circleSize = containerSize;
   const [animated] = useAnimated();
-  const circleSize = size;
+  const VIEWS = useAnimatedViewsNameGenerator('circle', 7);
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       alignItems: 'center',
       justifyContent: 'center'
     },
     spinnerBlock: {
-      height: size,
-      width: size
+      height: containerSize,
+      width: containerSize
     },
     circle: {
-      borderWidth: size * 0.06,
+      borderWidth: containerSize * 0.06,
       borderColor: color,
-      borderRadius: size * 0.5,
+      borderRadius: containerSize * 0.5,
       height: '100%',
       width: '100%',
       position: 'absolute',
       left: 0,
       top: 0
     },
-    firstCircle: {
+    circle1: {
       left: 0,
       top: 0
     },
-    secondCircle: {
+    circle2: {
       left: circleSize * -0.36,
       top: circleSize * 0.2
     },
-    thirdCircle: {
+    circle3: {
       left: circleSize * -0.36,
       top: circleSize * -0.2
     },
-    forthCircle: {
+    circle4: {
       left: 0,
       top: circleSize * -0.36
     },
-    fifthCircle: {
+    circle5: {
       left: circleSize * 0.36,
       top: circleSize * -0.2
     },
-    sixthCircle: {
+    circle6: {
       left: circleSize * 0.36,
       top: circleSize * 0.2
     },
-    seventhCircle: {
+    circle7: {
       left: 0,
       top: circleSize * 0.36
     }
   });
-  const animateStyle = {
+  const animatedStyle = {
     rotate: {
       transform: [
         {
@@ -97,18 +88,14 @@ export const IntersectingCirclesSpinner = (props: EpicSpinnersProps): Element<an
   }, [animated, animationDuration]);
 
   return (
-    <Animated.View style={[style, spinnerStyle.container, animateStyle.rotate]} {...props}>
-      <View style={spinnerStyle.spinnerBlock}>
-        <View style={[spinnerStyle.circle, spinnerStyle.firstCircle]} />
-        <View style={[spinnerStyle.circle, spinnerStyle.secondCircle]} />
-        <View style={[spinnerStyle.circle, spinnerStyle.thirdCircle]} />
-        <View style={[spinnerStyle.circle, spinnerStyle.forthCircle]} />
-        <View style={[spinnerStyle.circle, spinnerStyle.fifthCircle]} />
-        <View style={[spinnerStyle.circle, spinnerStyle.sixthCircle]} />
-        <View style={[spinnerStyle.circle, spinnerStyle.seventhCircle]} />
-      </View>
-    </Animated.View>
+    <View style={style} {...restProps}>
+      <Animated.View style={[spinnerStyle.container, animatedStyle.rotate]}>
+        <View style={spinnerStyle.spinnerBlock}>
+          <GenerateAnimatedViews animatedViewsArray={VIEWS} spinnerStyle={spinnerStyle} style={spinnerStyle.circle} />
+        </View>
+      </Animated.View>
+    </View>
   );
-};
+}
 
 IntersectingCirclesSpinner.defaultProps = EpicSpinnersDefaultProps;

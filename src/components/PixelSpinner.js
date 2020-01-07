@@ -1,34 +1,36 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
-
-const EpicSpinnersDefaultProps = {
-  size: 70,
-  color: 'red',
-  animationDuration: 1500
-};
-
-export const PixelSpinner = (props: EpicProps): Element<any> => {
-  const { size, animationDuration, color, style } = props;
-  const pixelSize = size * 0.3;
+export function PixelSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 3;
+  const pixelSize = containerSize * 0.3;
   const movementDirection = { positive: 'positive', negative: 'negative' };
-  const pixelAxisDirection = { center: 0, positive: size * 0.5, negative: size * -0.5 };
+  const pixelAxisDirection = { center: 0, positive: containerSize * 0.5, negative: containerSize * -0.5 };
   const [pixelContainer, pixel1, pixel3, pixel5, pixel7] = useAnimated(5);
+  const VIEWS = useAnimatedViewsNameGenerator('pixel', 8);
+  const getTranslateAxisFromAnimatedInterpolation = (animated, axisDirection, isPositive) => {
+    const direction = { [movementDirection.positive]: pixelSize + 1, [movementDirection.negative]: -(pixelSize + 1) };
+    return animated.interpolate({
+      inputRange: [0, 1, 2],
+      outputRange: [
+        pixelAxisDirection.center + direction[isPositive],
+        axisDirection,
+        pixelAxisDirection.center + direction[isPositive]
+      ]
+    });
+  };
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center'
@@ -46,33 +48,20 @@ export const PixelSpinner = (props: EpicProps): Element<any> => {
       backgroundColor: color,
       position: 'absolute'
     },
-    pixelSpinner2: {
+    pixel2: {
       transform: [{ translateX: pixelAxisDirection.positive }, { translateY: pixelAxisDirection.negative }]
     },
-    pixelSpinner4: {
+    pixel4: {
       transform: [{ translateX: pixelAxisDirection.positive }, { translateY: pixelAxisDirection.positive }]
     },
-    pixelSpinner6: {
+    pixel6: {
       transform: [{ translateX: pixelAxisDirection.negative }, { translateY: pixelAxisDirection.positive }]
     },
-    pixelSpinner8: {
+    pixel8: {
       transform: [{ translateX: pixelAxisDirection.negative }, { translateY: pixelAxisDirection.negative }]
     }
   });
-
-  const getTranslateAxisFromAnimatedInterpolation = (animated, axisDirection, isPositive) => {
-    const direction = { [movementDirection.positive]: pixelSize + 1, [movementDirection.negative]: -(pixelSize + 1) };
-    return animated.interpolate({
-      inputRange: [0, 1, 2],
-      outputRange: [
-        pixelAxisDirection.center + direction[isPositive],
-        axisDirection,
-        pixelAxisDirection.center + direction[isPositive]
-      ]
-    });
-  };
-
-  const animateStyle = {
+  const animatedStyle = {
     pixelSpinnerContainer: {
       transform: [
         {
@@ -83,7 +72,7 @@ export const PixelSpinner = (props: EpicProps): Element<any> => {
         }
       ]
     },
-    pixelSpinner1: {
+    pixel1: {
       transform: [
         { translateX: pixelAxisDirection.center },
         {
@@ -95,7 +84,7 @@ export const PixelSpinner = (props: EpicProps): Element<any> => {
         }
       ]
     },
-    pixelSpinner3: {
+    pixel3: {
       transform: [
         {
           translateX: getTranslateAxisFromAnimatedInterpolation(
@@ -107,7 +96,7 @@ export const PixelSpinner = (props: EpicProps): Element<any> => {
         { translateY: pixelAxisDirection.center }
       ]
     },
-    pixelSpinner5: {
+    pixel5: {
       transform: [
         { translateX: pixelAxisDirection.center },
         {
@@ -119,7 +108,7 @@ export const PixelSpinner = (props: EpicProps): Element<any> => {
         }
       ]
     },
-    pixelSpinner7: {
+    pixel7: {
       transform: [
         {
           translateX: getTranslateAxisFromAnimatedInterpolation(
@@ -159,21 +148,19 @@ export const PixelSpinner = (props: EpicProps): Element<any> => {
   }, [animationDuration, pixel1, pixel3, pixel5, pixel7, pixelContainer]);
 
   return (
-    <View style={style} {...props}>
+    <View style={style} {...restProps}>
       <View style={spinnerStyle.container}>
-        <Animated.View style={[spinnerStyle.pixelSpinnerContainer, animateStyle.pixelSpinnerContainer]}>
-          <Animated.View style={[spinnerStyle.pixelSpinner, animateStyle.pixelSpinner1]} />
-          <View style={[spinnerStyle.pixelSpinner, spinnerStyle.pixelSpinner2]} />
-          <Animated.View style={[spinnerStyle.pixelSpinner, animateStyle.pixelSpinner3]} />
-          <View style={[spinnerStyle.pixelSpinner, spinnerStyle.pixelSpinner4]} />
-          <Animated.View style={[spinnerStyle.pixelSpinner, animateStyle.pixelSpinner5]} />
-          <View style={[spinnerStyle.pixelSpinner, spinnerStyle.pixelSpinner6]} />
-          <Animated.View style={[spinnerStyle.pixelSpinner, animateStyle.pixelSpinner7]} />
-          <View style={[spinnerStyle.pixelSpinner, spinnerStyle.pixelSpinner8]} />
+        <Animated.View style={[spinnerStyle.pixelSpinnerContainer, animatedStyle.pixelSpinnerContainer]}>
+          <GenerateAnimatedViews
+            animatedViewsArray={VIEWS}
+            animatedStyle={animatedStyle}
+            spinnerStyle={spinnerStyle}
+            style={spinnerStyle.pixelSpinner}
+          />
         </Animated.View>
       </View>
     </View>
   );
-};
+}
 
 PixelSpinner.defaultProps = EpicSpinnersDefaultProps;

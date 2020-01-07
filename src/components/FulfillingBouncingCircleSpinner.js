@@ -1,53 +1,44 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
-import { Animated, Easing, StyleSheet } from 'react-native';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated } from '../core/CustomHooks';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicSpinnersProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
-
-const EpicSpinnersDefaultProps = {
-  size: 200,
-  color: 'red',
-  animationDuration: 1000
-};
-
-export const FulfillingBouncingCircleSpinner = (props: EpicSpinnersProps): Element<any> => {
-  const { size, color, animationDuration, style } = props;
-  const [animate] = useAnimated(new Animated.Value(0));
+export function FulfillingBouncingCircleSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 5;
+  const VIEWS = ['circle', 'orbit'];
+  const [animate] = useAnimated();
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       position: 'relative'
     },
     circle: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       borderColor: color,
-      borderRadius: size * 0.5,
+      borderRadius: containerSize * 0.5,
       position: 'relative',
-      borderWidth: size * 0.1
+      borderWidth: containerSize * 0.1
     },
     orbit: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       borderColor: color,
       position: 'absolute',
       top: 0,
       left: 0,
-      borderRadius: size * 0.5,
-      borderWidth: size * 0.03
+      borderRadius: containerSize * 0.5,
+      borderWidth: containerSize * 0.03
     }
   });
-  const animateStyle = {
+  const animatedStyle = {
     container: {
       transform: [
         {
@@ -107,11 +98,12 @@ export const FulfillingBouncingCircleSpinner = (props: EpicSpinnersProps): Eleme
   }, [animate, animationDuration]);
 
   return (
-    <Animated.View style={[style, spinnerStyle.container, animateStyle.container]} {...props}>
-      <Animated.View style={[spinnerStyle.circle, animateStyle.circle]} />
-      <Animated.View style={[spinnerStyle.orbit, animateStyle.orbit]} />
-    </Animated.View>
+    <View style={style} {...restProps}>
+      <Animated.View style={[spinnerStyle.container, animatedStyle.container]}>
+        <GenerateAnimatedViews animatedViewsArray={VIEWS} animatedStyle={animatedStyle} spinnerStyle={spinnerStyle} />
+      </Animated.View>
+    </View>
   );
-};
+}
 
 FulfillingBouncingCircleSpinner.defaultProps = EpicSpinnersDefaultProps;

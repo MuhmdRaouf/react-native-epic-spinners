@@ -1,32 +1,22 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated } from '../core/CustomHooks';
 
-type EpicProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
-const EpicSpinnersDefaultProps = {
-  size: 50,
-  color: 'red',
-  animationDuration: 4000
-};
-
-export const FulfillingSquareSpinner = (props: EpicProps): Element<any> => {
-  const { size, animationDuration, color, style } = props;
-  const [animatedContainer, animatedInnerSpinner] = useAnimated(2);
+export function FulfillingSquareSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 4;
+  const [animated] = useAnimated();
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       position: 'relative',
-      borderWidth: size * 0.1,
+      borderWidth: containerSize * 0.1,
       borderColor: color
     },
     spinnerInner: {
@@ -35,11 +25,11 @@ export const FulfillingSquareSpinner = (props: EpicProps): Element<any> => {
       opacity: 1
     }
   });
-  const animateStyle = {
+  const animatedStyle = {
     container: {
       transform: [
         {
-          rotate: animatedContainer.interpolate({
+          rotate: animated.interpolate({
             inputRange: [0, 1, 2, 4, 5],
             outputRange: ['0deg', '180deg', '180deg', '360deg', '360deg']
           })
@@ -47,7 +37,7 @@ export const FulfillingSquareSpinner = (props: EpicProps): Element<any> => {
       ]
     },
     spinnerInner: {
-      height: animatedInnerSpinner.interpolate({
+      height: animated.interpolate({
         inputRange: [0, 1, 2, 4, 5],
         outputRange: ['0%', '0%', '100%', '100%', '0%']
       })
@@ -56,28 +46,21 @@ export const FulfillingSquareSpinner = (props: EpicProps): Element<any> => {
 
   useEffect(() => {
     Animated.loop(
-      Animated.parallel([
-        Animated.timing(animatedContainer, {
-          toValue: 5,
-          duration: animationDuration,
-          easing: Easing.ease
-        }),
-        Animated.timing(animatedInnerSpinner, {
-          toValue: 5,
-          duration: animationDuration,
-          easing: Easing.ease
-        })
-      ])
+      Animated.timing(animated, {
+        toValue: 5,
+        duration: animationDuration,
+        easing: Easing.ease
+      })
     ).start();
-  }, [animatedContainer, animatedInnerSpinner, animationDuration]);
+  }, [animated, animationDuration]);
 
   return (
-    <View style={style} {...props}>
-      <Animated.View style={[spinnerStyle.container, animateStyle.container]}>
-        <Animated.View style={[spinnerStyle.spinnerInner, animateStyle.spinnerInner]} />
+    <View style={style} {...restProps}>
+      <Animated.View style={[spinnerStyle.container, animatedStyle.container]}>
+        <Animated.View style={[spinnerStyle.spinnerInner, animatedStyle.spinnerInner]} />
       </Animated.View>
     </View>
   );
-};
+}
 
 FulfillingSquareSpinner.defaultProps = EpicSpinnersDefaultProps;

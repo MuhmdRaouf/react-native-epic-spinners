@@ -1,30 +1,39 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
+import type AnimatedInterpolation from 'react-native/Libraries/Animated/src/nodes/AnimatedInterpolation';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
-const EpicSpinnersDefaultProps = {
-  size: 100,
-  color: 'red',
-  animationDuration: 1000
+type TransformationProps = {
+  rotateX: string | AnimatedInterpolation,
+  rotateZ: string | AnimatedInterpolation,
+  secondRotateZ: string | AnimatedInterpolation
 };
 
-export const AtomSpinner = (props: EpicProps): Element<any> => {
-  const { size, animationDuration, color, style } = props;
-  const [firstSpinnerLine, secondSpinnerLine, thirdSpinnerLine] = useAnimated(3);
+type TransformationReturn = { transform: Array<Object> };
+
+export function AtomSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 5;
+  const [animatedSpinnerLine] = useAnimated();
+  const VIEWS = useAnimatedViewsNameGenerator('spinnerLine', 3);
+  const spinnerLineRotateZ = animatedSpinnerLine.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
+  const getAnimatedTransformation = ({
+    rotateX = '0deg',
+    rotateZ = '0deg',
+    secondRotateZ = '0deg'
+  }: TransformationProps): TransformationReturn => {
+    return { transform: [{ rotateZ: secondRotateZ }, { rotateX }, { rotateZ }] };
+  };
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       overflow: 'hidden'
     },
     spinnerInner: {
@@ -35,107 +44,66 @@ export const AtomSpinner = (props: EpicProps): Element<any> => {
       justifyContent: 'center'
     },
     spinnerCircle: {
-      height: size * 0.18,
-      width: size * 0.18,
+      height: containerSize * 0.18,
+      width: containerSize * 0.18,
       backgroundColor: color,
-      borderRadius: size * 0.5
+      borderRadius: containerSize * 0.5
     },
     spinnerLine: {
       position: 'absolute',
       width: '100%',
       height: '100%',
-      borderRadius: size * 0.5,
-      borderLeftWidth: size / 25,
-      borderTopWidth: size / 25,
+      borderRadius: containerSize * 0.5,
+      borderLeftWidth: containerSize / 25,
+      borderTopWidth: containerSize / 25,
       borderLeftColor: color,
       borderTopColor: 'transparent'
     }
   });
-  const animateStyle = {
-    firstSpinnerLine: {
-      transform: [
-        {
-          rotateZ: '120deg'
-        },
-        {
-          rotateX: '66deg'
-        },
-        {
-          rotateZ: firstSpinnerLine.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['0deg', '360deg']
-          })
-        }
-      ]
-    },
-    secondSpinnerLine: {
-      transform: [
-        {
-          rotateZ: '240deg'
-        },
-        {
-          rotateX: '66deg'
-        },
-        {
-          rotateZ: firstSpinnerLine.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['0deg', '360deg']
-          })
-        }
-      ]
-    },
-    thirdSpinnerLine: {
-      transform: [
-        {
-          rotateZ: '360deg'
-        },
-        {
-          rotateX: '66deg'
-        },
-        {
-          rotateZ: firstSpinnerLine.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['0deg', '360deg']
-          })
-        }
-      ]
-    }
+  const animatedStyle = {
+    spinnerLine1: getAnimatedTransformation({
+      secondRotateZ: '120deg',
+      rotateX: '66deg',
+      rotateZ: spinnerLineRotateZ
+    }),
+    spinnerLine2: getAnimatedTransformation({
+      secondRotateZ: '240deg',
+      rotateX: '66deg',
+      rotateZ: spinnerLineRotateZ
+    }),
+    spinnerLine3: getAnimatedTransformation({
+      secondRotateZ: '360deg',
+      rotateX: '66deg',
+      rotateZ: spinnerLineRotateZ
+    })
   };
 
   useEffect(() => {
     Animated.loop(
       Animated.parallel([
-        Animated.timing(firstSpinnerLine, {
-          toValue: 1,
-          duration: animationDuration,
-          easing: Easing.linear
-        }),
-        Animated.timing(secondSpinnerLine, {
-          toValue: 1,
-          duration: animationDuration,
-          easing: Easing.linear
-        }),
-        Animated.timing(thirdSpinnerLine, {
+        Animated.timing(animatedSpinnerLine, {
           toValue: 1,
           duration: animationDuration,
           easing: Easing.linear
         })
       ])
     ).start();
-  }, [animationDuration, firstSpinnerLine, secondSpinnerLine, thirdSpinnerLine]);
+  }, [animationDuration, animatedSpinnerLine]);
 
   return (
-    <View style={style} {...props}>
+    <View style={style} {...restProps}>
       <View style={spinnerStyle.container}>
         <View style={[spinnerStyle.spinnerInner]}>
-          <Animated.View style={[spinnerStyle.spinnerLine, animateStyle.firstSpinnerLine]} />
-          <Animated.View style={[spinnerStyle.spinnerLine, animateStyle.secondSpinnerLine]} />
-          <Animated.View style={[spinnerStyle.spinnerLine, animateStyle.thirdSpinnerLine]} />
+          <GenerateAnimatedViews
+            animatedViewsArray={VIEWS}
+            animatedStyle={animatedStyle}
+            style={spinnerStyle.spinnerLine}
+          />
           <View style={[spinnerStyle.spinnerCircle]} />
         </View>
       </View>
     </View>
   );
-};
+}
 
 AtomSpinner.defaultProps = EpicSpinnersDefaultProps;

@@ -1,29 +1,27 @@
 /** @flow **/
 import type { Element } from 'react';
-import React, { useEffect, useState } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import React, { useEffect } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
-import { useAnimated } from '../core/customHooks';
 
-type EpicSpinnersProps = {
-  size?: number,
-  color?: string,
-  animationDuration?: number,
-  style?: ViewStyleProp
-};
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-const EpicSpinnersDefaultProps = {
-  size: 15,
-  color: 'red',
-  animationDuration: 1200
-};
-
-export const CirclesToRhombusesSpinner = (props: EpicSpinnersProps): Element<any> => {
-  const { size, color, animationDuration, style } = props;
+export function CirclesToRhombusesSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
   const [leftCircle, middleCircle, rightCircle] = useAnimated(3);
-  const circleMarginLeft = size * 0.5;
-  const squareBorderRadius = size * 0.1;
-  const circleBorderRadius = size * 0.5;
+  const VIEWS = useAnimatedViewsNameGenerator('circle', 3);
+  const getAnimatedInterpolation = (animated) => {
+    const squareBorderRadius = size * 0.1;
+    const circleBorderRadius = size * 0.5;
+    return {
+      borderRadius: animated.interpolate({
+        inputRange: [0, 1.7, 9.35, 10],
+        outputRange: [squareBorderRadius, circleBorderRadius, circleBorderRadius, squareBorderRadius]
+      })
+    };
+  };
   const animationDelay = animationDuration * 0.17;
   const spinnerStyle = StyleSheet.create({
     container: {
@@ -36,34 +34,18 @@ export const CirclesToRhombusesSpinner = (props: EpicSpinnersProps): Element<any
     circle: {
       height: size,
       width: size,
-      marginHorizontal: circleMarginLeft,
+      marginHorizontal: size * 0.5,
       transform: [{ rotate: '45deg' }],
       borderRadius: size * 0.1,
       borderWidth: size * 0.2,
       borderColor: color,
       overflow: 'hidden'
-      // animation: circles-to-rhombuses-animation ${(props) => props.animationDuration}ms linear infinite;
     }
   });
-  const animateStyle = {
-    leftCircle: {
-      borderRadius: leftCircle.interpolate({
-        inputRange: [0, 1.7, 9.35, 10],
-        outputRange: [squareBorderRadius, circleBorderRadius, circleBorderRadius, squareBorderRadius]
-      })
-    },
-    middleCircle: {
-      borderRadius: middleCircle.interpolate({
-        inputRange: [0, 1.7, 9.35, 10],
-        outputRange: [squareBorderRadius, circleBorderRadius, circleBorderRadius, squareBorderRadius]
-      })
-    },
-    rightCircle: {
-      borderRadius: rightCircle.interpolate({
-        inputRange: [0, 1.7, 9.35, 10],
-        outputRange: [squareBorderRadius, circleBorderRadius, circleBorderRadius, squareBorderRadius]
-      })
-    }
+  const animatedStyle = {
+    circle1: getAnimatedInterpolation(leftCircle),
+    circle2: getAnimatedInterpolation(middleCircle),
+    circle3: getAnimatedInterpolation(rightCircle)
   };
 
   useEffect(() => {
@@ -72,35 +54,32 @@ export const CirclesToRhombusesSpinner = (props: EpicSpinnersProps): Element<any
         Animated.timing(leftCircle, {
           toValue: 10,
           duration: animationDuration,
-          easing: Easing.linear(),
-          useNativeDriver: true
+          easing: Easing.linear()
         })
       ),
       Animated.loop(
         Animated.timing(middleCircle, {
           toValue: 10,
           duration: animationDuration,
-          easing: Easing.linear(),
-          useNativeDriver: true
+          easing: Easing.linear()
         })
       ),
       Animated.loop(
         Animated.timing(rightCircle, {
           toValue: 10,
           duration: animationDuration,
-          easing: Easing.linear(),
-          useNativeDriver: true
+          easing: Easing.linear()
         })
       )
     ]).start();
   }, [animationDelay, animationDuration, leftCircle, middleCircle, rightCircle]);
 
   return (
-    <View style={[style, spinnerStyle.container]} {...props}>
-      <Animated.View style={[spinnerStyle.circle, animateStyle.leftCircle]} />
-      <Animated.View style={[spinnerStyle.circle, animateStyle.middleCircle]} />
-      <Animated.View style={[spinnerStyle.circle, animateStyle.rightCircle]} />
+    <View style={style} {...restProps}>
+      <View style={spinnerStyle.container}>
+        <GenerateAnimatedViews animatedViewsArray={VIEWS} animatedStyle={animatedStyle} style={spinnerStyle.circle} />
+      </View>
     </View>
   );
-};
+}
 CirclesToRhombusesSpinner.defaultProps = EpicSpinnersDefaultProps;

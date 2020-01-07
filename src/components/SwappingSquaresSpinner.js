@@ -1,44 +1,45 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
-import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
-
-const EpicSpinnersDefaultProps = {
-  size: 65,
-  color: 'red',
-  animationDuration: 1000
-};
-
-export const SwappingSquaresSpinner = (props: EpicProps): Element<any> => {
-  const { size, animationDuration, color, style, ...restProps } = props;
-  const [rightAnimation, leftAnimation] = useAnimated(2);
+export function SwappingSquaresSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 1.5;
   const axisDirection = {
     center: 0,
-    positive: size * 0.65,
-    negative: size * -0.65,
-    slowPositive: size * 0.7,
-    slowNegative: size * -0.7
+    positive: containerSize * 0.65,
+    negative: containerSize * -0.65,
+    slowPositive: containerSize * 0.7,
+    slowNegative: containerSize * -0.7
   };
-  const generateSpinners = () => {
-    return ['square1', 'square2', 'square3', 'square4'].map((val, index) => (
-      <Animated.View key={index} style={[spinnerStyle.square, animatedStyle[val]]} />
-    ));
+  const animatedInterpolateOutputRange = {
+    positive: [
+      axisDirection.center,
+      axisDirection.positive,
+      axisDirection.slowPositive,
+      axisDirection.slowPositive,
+      axisDirection.center
+    ],
+    negative: [
+      axisDirection.center,
+      axisDirection.negative,
+      axisDirection.slowNegative,
+      axisDirection.slowNegative,
+      axisDirection.center
+    ]
   };
-
+  const [rightAnimation, leftAnimation] = useAnimated(2);
+  const VIEWS = useAnimatedViewsNameGenerator('square', 4);
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       position: 'relative',
       justifyContent: 'center',
       alignItems: 'center'
@@ -48,35 +49,22 @@ export const SwappingSquaresSpinner = (props: EpicProps): Element<any> => {
       width: '100%',
       position: 'absolute',
       borderColor: color,
-      borderWidth: size * 0.2
+      borderWidth: containerSize * 0.2
     }
   });
-
   const animatedStyle = {
     square1: {
       transform: [
         {
           translateX: rightAnimation.interpolate({
             inputRange: [0, 0.8, 1, 2, 3],
-            outputRange: [
-              axisDirection.center,
-              axisDirection.negative,
-              axisDirection.slowNegative,
-              axisDirection.slowNegative,
-              axisDirection.center
-            ]
+            outputRange: animatedInterpolateOutputRange.negative
           })
         },
         {
           translateY: rightAnimation.interpolate({
             inputRange: [0, 0.8, 1, 2, 3],
-            outputRange: [
-              axisDirection.center,
-              axisDirection.negative,
-              axisDirection.slowNegative,
-              axisDirection.slowNegative,
-              axisDirection.center
-            ]
+            outputRange: animatedInterpolateOutputRange.negative
           })
         },
         {
@@ -92,25 +80,13 @@ export const SwappingSquaresSpinner = (props: EpicProps): Element<any> => {
         {
           translateX: rightAnimation.interpolate({
             inputRange: [0, 0.8, 1, 2, 3],
-            outputRange: [
-              axisDirection.center,
-              axisDirection.positive,
-              axisDirection.slowPositive,
-              axisDirection.slowPositive,
-              axisDirection.center
-            ]
+            outputRange: animatedInterpolateOutputRange.positive
           })
         },
         {
           translateY: rightAnimation.interpolate({
             inputRange: [0, 0.8, 1, 2, 3],
-            outputRange: [
-              axisDirection.center,
-              axisDirection.positive,
-              axisDirection.slowPositive,
-              axisDirection.slowPositive,
-              axisDirection.center
-            ]
+            outputRange: animatedInterpolateOutputRange.positive
           })
         },
         {
@@ -126,25 +102,13 @@ export const SwappingSquaresSpinner = (props: EpicProps): Element<any> => {
         {
           translateX: leftAnimation.interpolate({
             inputRange: [0, 0.8, 1, 2, 3],
-            outputRange: [
-              axisDirection.center,
-              axisDirection.positive,
-              axisDirection.slowPositive,
-              axisDirection.slowPositive,
-              axisDirection.center
-            ]
+            outputRange: animatedInterpolateOutputRange.positive
           })
         },
         {
           translateY: leftAnimation.interpolate({
             inputRange: [0, 0.8, 1, 2, 3],
-            outputRange: [
-              axisDirection.center,
-              axisDirection.negative,
-              axisDirection.slowNegative,
-              axisDirection.slowNegative,
-              axisDirection.center
-            ]
+            outputRange: animatedInterpolateOutputRange.negative
           })
         },
         {
@@ -160,25 +124,13 @@ export const SwappingSquaresSpinner = (props: EpicProps): Element<any> => {
         {
           translateX: leftAnimation.interpolate({
             inputRange: [0, 0.8, 1, 2, 3],
-            outputRange: [
-              axisDirection.center,
-              axisDirection.negative,
-              axisDirection.slowNegative,
-              axisDirection.slowNegative,
-              axisDirection.center
-            ]
+            outputRange: animatedInterpolateOutputRange.negative
           })
         },
         {
           translateY: leftAnimation.interpolate({
             inputRange: [0, 0.8, 1, 2, 3],
-            outputRange: [
-              axisDirection.center,
-              axisDirection.positive,
-              axisDirection.slowPositive,
-              axisDirection.slowPositive,
-              axisDirection.center
-            ]
+            outputRange: animatedInterpolateOutputRange.positive
           })
         },
         {
@@ -192,27 +144,28 @@ export const SwappingSquaresSpinner = (props: EpicProps): Element<any> => {
   };
 
   useEffect(() => {
+    const getAnimatedTimingLoop = (animated) => {
+      return Animated.loop(
+        Animated.timing(animated, {
+          toValue: 3,
+          duration: animationDuration
+        })
+      );
+    };
+
     Animated.stagger(animationDuration * 0.5, [
-      Animated.loop(
-        Animated.timing(rightAnimation, {
-          toValue: 3,
-          duration: animationDuration,
-        })
-      ),
-      Animated.loop(
-        Animated.timing(leftAnimation, {
-          toValue: 3,
-          duration: animationDuration,
-        })
-      )
+      getAnimatedTimingLoop(rightAnimation),
+      getAnimatedTimingLoop(leftAnimation)
     ]).start();
-  }, [rightAnimation, animationDuration, leftAnimation]);
+  }, [animationDuration, leftAnimation, rightAnimation]);
 
   return (
     <View style={style} {...restProps}>
-      <View style={spinnerStyle.container}>{generateSpinners(4)}</View>
+      <View style={spinnerStyle.container}>
+        <GenerateAnimatedViews animatedViewsArray={VIEWS} animatedStyle={animatedStyle} style={spinnerStyle.square} />
+      </View>
     </View>
   );
-};
+}
 
 SwappingSquaresSpinner.defaultProps = EpicSpinnersDefaultProps;

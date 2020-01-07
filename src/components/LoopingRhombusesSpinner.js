@@ -1,27 +1,17 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicSpinnersProps = {
-  size?: number,
-  color?: string,
-  animationDuration?: number,
-  style?: ViewStyleProp
-};
-
-const EpicSpinnersDefaultProps = {
-  size: 30,
-  color: 'red',
-  animationDuration: 2500
-};
-
-export const LoopingRhombusesSpinner = (props: EpicSpinnersProps): Element<any> => {
-  const { size, color, animationDuration, style } = props;
+export function LoopingRhombusesSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
   const [firstRhombuses, secondRhombuses, thirdRhombuses] = useAnimated(3);
+  const VIEWS = useAnimatedViewsNameGenerator('rhombus', 3);
   const spinnerStyle = StyleSheet.create({
     container: {
       height: size,
@@ -59,53 +49,43 @@ export const LoopingRhombusesSpinner = (props: EpicSpinnersProps): Element<any> 
       }
     ];
   };
-  const animateStyle = {
-    firstRhombuses: {
+  const animatedStyle = {
+    rhombus1: {
       transform: getAnimatedStyle(firstRhombuses)
     },
-    secondRhombuses: {
+    rhombus2: {
       transform: getAnimatedStyle(secondRhombuses)
     },
-    thirdRhombuses: {
+    rhombus3: {
       transform: getAnimatedStyle(thirdRhombuses)
     }
   };
 
   useEffect(() => {
+    const getAnimatedTimingLoop = (animated) => {
+      return Animated.loop(
+        Animated.timing(animated, {
+          toValue: 2,
+          duration: animationDuration,
+          easing: Easing.linear
+        })
+      );
+    };
+
     Animated.stagger(animationDuration * 0.3, [
-      Animated.loop(
-        Animated.timing(firstRhombuses, {
-          toValue: 2,
-          duration: animationDuration,
-          easing: Easing.linear
-        })
-      ),
-      Animated.loop(
-        Animated.timing(secondRhombuses, {
-          toValue: 2,
-          duration: animationDuration,
-          easing: Easing.linear
-        })
-      ),
-      Animated.loop(
-        Animated.timing(thirdRhombuses, {
-          toValue: 2,
-          duration: animationDuration,
-          easing: Easing.linear
-        })
-      )
+      getAnimatedTimingLoop(firstRhombuses),
+      getAnimatedTimingLoop(secondRhombuses),
+      getAnimatedTimingLoop(thirdRhombuses)
     ]).start();
   }, [animationDuration, firstRhombuses, secondRhombuses, thirdRhombuses]);
 
   return (
-    <View style={style} {...props}>
+    <View style={style} {...restProps}>
       <View style={spinnerStyle.container}>
-        <Animated.View style={[spinnerStyle.rhombus, animateStyle.firstRhombuses]} />
-        <Animated.View style={[spinnerStyle.rhombus, animateStyle.secondRhombuses]} />
-        <Animated.View style={[spinnerStyle.rhombus, animateStyle.thirdRhombuses]} />
+        <GenerateAnimatedViews animatedViewsArray={VIEWS} animatedStyle={animatedStyle} style={spinnerStyle.rhombus} />
       </View>
     </View>
   );
-};
+}
 
 LoopingRhombusesSpinner.defaultProps = EpicSpinnersDefaultProps;

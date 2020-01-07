@@ -1,50 +1,42 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
-const EpicSpinnersDefaultProps = {
-  size: 60,
-  color: 'red',
-  animationDuration: 1000
-};
-
-export const HalfCircleSpinner = (props: EpicProps): Element<any> => {
-  const { size, animationDuration, color, style } = props;
+export function HalfCircleSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 5;
   const [firstInnerCircle, secondInnerCircle] = useAnimated(2);
+  const VIEWS = useAnimatedViewsNameGenerator('innerCircle', 2);
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       position: 'relative',
-      borderRadius: size
+      borderRadius: containerSize
     },
     circle: {
       position: 'absolute',
       width: '100%',
       height: '100%',
-      borderRadius: size,
-      borderWidth: size / 10,
+      borderRadius: containerSize,
+      borderWidth: containerSize / 10,
       borderColor: 'transparent'
     },
-    firstInnerCircle: {
+    innerCircle1: {
       borderTopColor: color
     },
-    secondInnerCircle: {
+    innerCircle2: {
       borderBottomColor: color
     }
   });
-  const animateStyle = {
-    firstInnerCircle: {
+  const animatedStyle = {
+    innerCircle1: {
       transform: [
         {
           rotate: firstInnerCircle.interpolate({
@@ -54,7 +46,7 @@ export const HalfCircleSpinner = (props: EpicProps): Element<any> => {
         }
       ]
     },
-    secondInnerCircle: {
+    innerCircle2: {
       transform: [
         {
           rotate: secondInnerCircle.interpolate({
@@ -91,15 +83,18 @@ export const HalfCircleSpinner = (props: EpicProps): Element<any> => {
       )
     ]).start();
   }, [animationDuration, firstInnerCircle, secondInnerCircle]);
-
   return (
-    <View style={style} {...props}>
+    <View style={style} {...restProps}>
       <View style={spinnerStyle.container}>
-        <Animated.View style={[spinnerStyle.circle, spinnerStyle.firstInnerCircle, animateStyle.firstInnerCircle]} />
-        <Animated.View style={[spinnerStyle.circle, spinnerStyle.secondInnerCircle, animateStyle.secondInnerCircle]} />
+        <GenerateAnimatedViews
+          animatedViewsArray={VIEWS}
+          animatedStyle={animatedStyle}
+          spinnerStyle={spinnerStyle}
+          style={spinnerStyle.circle}
+        />
       </View>
     </View>
   );
-};
+}
 
 HalfCircleSpinner.defaultProps = EpicSpinnersDefaultProps;

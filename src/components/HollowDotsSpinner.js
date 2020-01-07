@@ -1,28 +1,18 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicSpinnersProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
-
-const EpicSpinnersDefaultProps = {
-  size: 15,
-  color: 'red',
-  animationDuration: 1000
-};
-
-export const HollowDotsSpinner = (props: EpicSpinnersProps): Element<any> => {
-  const { size, color, animationDuration, style } = props;
+export function HollowDotsSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
   const dotsNum = 3;
   const animationDelay = animationDuration * 0.3;
+  const VIEWS = useAnimatedViewsNameGenerator('circle', 3);
   const [leftCircle, middleCircle, rightCircle] = useAnimated(3);
   const spinnerStyle = StyleSheet.create({
     container: {
@@ -40,8 +30,8 @@ export const HollowDotsSpinner = (props: EpicSpinnersProps): Element<any> => {
       transform: [{ scale: 0 }]
     }
   });
-  const animateStyle = {
-    leftCircle: {
+  const animatedStyle = {
+    circle1: {
       transform: [
         {
           scale: leftCircle.interpolate({
@@ -55,7 +45,7 @@ export const HollowDotsSpinner = (props: EpicSpinnersProps): Element<any> => {
         outputRange: [1, 1, 0]
       })
     },
-    middleCircle: {
+    circle2: {
       transform: [
         {
           scale: middleCircle.interpolate({
@@ -69,7 +59,7 @@ export const HollowDotsSpinner = (props: EpicSpinnersProps): Element<any> => {
         outputRange: [1, 1, 0]
       })
     },
-    rightCircle: {
+    circle3: {
       transform: [
         {
           scale: rightCircle.interpolate({
@@ -86,38 +76,29 @@ export const HollowDotsSpinner = (props: EpicSpinnersProps): Element<any> => {
   };
 
   useEffect(() => {
-    Animated.stagger(animationDelay, [
-      Animated.loop(
-        Animated.timing(leftCircle, {
+    const getAnimatedTimingLoop = (animated) => {
+      return Animated.loop(
+        Animated.timing(animated, {
           toValue: 2,
           duration: animationDuration,
           easing: Easing.inOut(Easing.ease)
         })
-      ),
-      Animated.loop(
-        Animated.timing(middleCircle, {
-          toValue: 2,
-          duration: animationDuration,
-          easing: Easing.inOut(Easing.ease)
-        })
-      ),
-      Animated.loop(
-        Animated.timing(rightCircle, {
-          toValue: 2,
-          duration: animationDuration,
-          easing: Easing.inOut(Easing.ease)
-        })
-      )
-    ]).start();
-  }, [leftCircle, middleCircle, rightCircle, animationDelay, animationDuration]);
+      );
+    };
 
+    Animated.stagger(animationDelay, [
+      getAnimatedTimingLoop(leftCircle),
+      getAnimatedTimingLoop(middleCircle),
+      getAnimatedTimingLoop(rightCircle)
+    ]).start();
+  }, [animationDelay, animationDuration, leftCircle, middleCircle, rightCircle]);
   return (
-    <View style={[style, spinnerStyle.container]} {...props}>
-      <Animated.View style={[spinnerStyle.dot, animateStyle.leftCircle]} />
-      <Animated.View style={[spinnerStyle.dot, animateStyle.middleCircle]} />
-      <Animated.View style={[spinnerStyle.dot, animateStyle.rightCircle]} />
+    <View style={style} {...restProps}>
+      <View style={spinnerStyle.container}>
+        <GenerateAnimatedViews animatedViewsArray={VIEWS} animatedStyle={animatedStyle} style={spinnerStyle.dot} />
+      </View>
     </View>
   );
-};
+}
 
 HollowDotsSpinner.defaultProps = EpicSpinnersDefaultProps;

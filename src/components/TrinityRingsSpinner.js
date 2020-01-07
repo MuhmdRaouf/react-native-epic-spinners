@@ -1,33 +1,26 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
 import type AnimatedInterpolation from 'react-native/Libraries/Animated/src/nodes/AnimatedInterpolation';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
 type TransformationTypeProp = {
   rotateX?: string | AnimatedInterpolation,
   rotateY?: string | AnimatedInterpolation,
   rotateZ?: string | AnimatedInterpolation
 };
-const EpicSpinnersDefaultProps = {
-  size: 150,
-  color: 'red',
-  animationDuration: 1500
-};
 
-export const TrinityRingsSpinner = (props: EpicProps): Element<any> => {
-  const { size, animationDuration, color, style, ...restProps } = props;
+export function TrinityRingsSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 5;
   const containerPadding = 3;
-  const outerSize = size - containerPadding;
+  const VIEWS = useAnimatedViewsNameGenerator('circle', 5);
+  const outerSize = containerSize - containerPadding;
   const [anim] = useAnimated();
   const getAnimatedTransformation = ({
     rotateX = '0deg',
@@ -51,8 +44,8 @@ export const TrinityRingsSpinner = (props: EpicProps): Element<any> => {
 
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       padding: 3,
       position: 'relative',
       justifyContent: 'center',
@@ -61,7 +54,7 @@ export const TrinityRingsSpinner = (props: EpicProps): Element<any> => {
     },
     circle: {
       position: 'absolute',
-      borderRadius: size,
+      borderRadius: containerSize,
       borderColor: color
     },
     circle1: {
@@ -80,7 +73,7 @@ export const TrinityRingsSpinner = (props: EpicProps): Element<any> => {
       borderWidth: 3
     }
   });
-  const animateStyle = {
+  const animatedStyle = {
     circle1: getAnimatedTransformation({ rotateX: circle1RotateX, rotateY: circle1RotateY, rotateZ: circle1RotateZ }),
     circle2: getAnimatedTransformation({ rotateX: circle2RotateX, rotateY: circle2RotateY, rotateZ: circle2RotateZ }),
     circle3: getAnimatedTransformation({ rotateX: circle3RotateX, rotateY: circle3RotateY, rotateZ: circle3RotateZ })
@@ -99,12 +92,15 @@ export const TrinityRingsSpinner = (props: EpicProps): Element<any> => {
   return (
     <View style={style} {...restProps}>
       <View style={spinnerStyle.container}>
-        <Animated.View style={[spinnerStyle.circle, spinnerStyle.circle1, animateStyle.circle1]} />
-        <Animated.View style={[spinnerStyle.circle, spinnerStyle.circle2, animateStyle.circle2]} />
-        <Animated.View style={[spinnerStyle.circle, spinnerStyle.circle3, animateStyle.circle3]} />
+        <GenerateAnimatedViews
+          animatedViewsArray={VIEWS}
+          spinnerStyle={spinnerStyle}
+          animatedStyle={animatedStyle}
+          style={spinnerStyle.circle}
+        />
       </View>
     </View>
   );
-};
+}
 
 TrinityRingsSpinner.defaultProps = EpicSpinnersDefaultProps;

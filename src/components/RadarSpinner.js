@@ -1,33 +1,24 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
-
-const EpicSpinnersDefaultProps = {
-  size: 50,
-  color: 'red',
-  animationDuration: 2000
-};
-
-export const RadarSpinner = (props: EpicProps): Element<any> => {
-  const { size, animationDuration, color, style } = props;
-  const borderWidth = size * 0.2;
+export function RadarSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 1.5;
+  const borderWidth = containerSize * 0.2;
   const animationDelay = animationDuration * 0.15;
   const [coreCircle, biggerCircles] = useAnimated(2);
+  const VIEWS = useAnimatedViewsNameGenerator('outerCircle', 3);
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center'
@@ -42,23 +33,23 @@ export const RadarSpinner = (props: EpicProps): Element<any> => {
       height: '100%',
       width: '100%',
       position: 'absolute',
-      borderRadius: size * size,
+      borderRadius: containerSize * containerSize,
       borderWidth: borderWidth,
       borderColor: color,
       backgroundColor: 'transparent',
       borderTopColor: 'transparent',
       borderBottomColor: 'transparent'
     },
-    firstCircle: {
+    coreCircle: {
       padding: borderWidth * 2
     },
-    secondCircle: {
+    outerCircle1: {
       padding: borderWidth * 2 * 2
     },
-    thirdCircle: {
+    outerCircle2: {
       padding: borderWidth * 2 * 3
     },
-    forthCircle: {
+    outerCircle3: {
       padding: borderWidth * 2 * 4
     }
   });
@@ -95,19 +86,17 @@ export const RadarSpinner = (props: EpicProps): Element<any> => {
   }, [animationDelay, animationDuration, biggerCircles, coreCircle]);
 
   return (
-    <View style={[style]} {...props}>
+    <View style={[style]} {...restProps}>
       <View style={spinnerStyle.container}>
         <View style={spinnerStyle.circleContainer}>
-          <Animated.View style={[spinnerStyle.circle, spinnerStyle.firstCircle, animatedStyle.coreCircle]} />
+          <Animated.View style={[spinnerStyle.circle, spinnerStyle.coreCircle, animatedStyle.coreCircle]} />
           <Animated.View style={[spinnerStyle.circleContainer, animatedStyle.biggerCircle]}>
-            <View style={[spinnerStyle.circle, spinnerStyle.secondCircle]} />
-            <View style={[spinnerStyle.circle, spinnerStyle.thirdCircle]} />
-            <View style={[spinnerStyle.circle, spinnerStyle.forthCircle]} />
+            <GenerateAnimatedViews animatedViewsArray={VIEWS} spinnerStyle={spinnerStyle} style={spinnerStyle.circle} />
           </Animated.View>
         </View>
       </View>
     </View>
   );
-};
+}
 
 RadarSpinner.defaultProps = EpicSpinnersDefaultProps;

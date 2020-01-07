@@ -1,35 +1,26 @@
 /** @flow **/
 import type { Element } from 'react';
 import React, { useEffect } from 'react';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 import { Animated, StyleSheet, View } from 'react-native';
 
-import { useAnimated } from '../core/customHooks';
+import type { EpicSpinnersProps } from '../core/Typings';
+import { EpicSpinnersDefaultProps } from '../core/Typings';
+import { useAnimated, useAnimatedViewsNameGenerator } from '../core/CustomHooks';
+import { GenerateAnimatedViews } from '../core/GenerateAnimatedViews';
 
-type EpicProps = {
-  size?: number,
-  animationDuration?: number,
-  color?: string,
-  style?: ViewStyleProp
-};
-
-const EpicSpinnersDefaultProps = {
-  size: 100,
-  color: 'red',
-  animationDuration: 2000
-};
-
-export const SemipolarSpinner = (props: EpicProps): Element<any> => {
-  const { size, animationDuration, color, style, ...restProps } = props;
+export function SemipolarSpinner(props: EpicSpinnersProps): Element<any> {
+  const { color, animationDuration, size, style, ...restProps } = props;
+  const containerSize = size * 5;
   const ringsNumber = 5;
-  const [ring1, ring2, ring3, ring4, ring5] = useAnimated(ringsNumber);
   const containerPadding = 3;
-  const outerRingSize = size - containerPadding * 2;
+  const outerRingSize = containerSize - containerPadding * 2;
   const ringBase = outerRingSize / ringsNumber;
+  const [ring1, ring2, ring3, ring4, ring5] = useAnimated(ringsNumber);
+  const VIEWS = useAnimatedViewsNameGenerator('ring', 5);
   const spinnerStyle = StyleSheet.create({
     container: {
-      height: size,
-      width: size,
+      height: containerSize,
+      width: containerSize,
       padding: containerPadding,
       overflow: 'hidden',
       position: 'relative',
@@ -37,8 +28,8 @@ export const SemipolarSpinner = (props: EpicProps): Element<any> => {
       justifyContent: 'center'
     },
     ring: {
-      borderRadius: size * 0.5,
-      borderWidth: size * 0.04,
+      borderRadius: containerSize * 0.5,
+      borderWidth: containerSize * 0.04,
       borderTopColor: color,
       borderLeftColor: color,
       position: 'absolute'
@@ -64,7 +55,6 @@ export const SemipolarSpinner = (props: EpicProps): Element<any> => {
       width: ringBase + 4 * ringBase
     }
   });
-
   const getAnimatedTransformation = (animated) => {
     return {
       transform: [
@@ -83,7 +73,6 @@ export const SemipolarSpinner = (props: EpicProps): Element<any> => {
       ]
     };
   };
-
   const animatedStyle = {
     ring1: getAnimatedTransformation(ring1),
     ring2: getAnimatedTransformation(ring2),
@@ -92,18 +81,12 @@ export const SemipolarSpinner = (props: EpicProps): Element<any> => {
     ring5: getAnimatedTransformation(ring5)
   };
 
-  const generateSpinners = () => {
-    return ['ring1', 'ring2', 'ring3', 'ring4', 'ring5'].map((val, index) => {
-      return <Animated.View key={index} style={[spinnerStyle.ring, spinnerStyle[val], animatedStyle[val]]} />;
-    });
-  };
-
   useEffect(() => {
     const getAnimatedTiming = (animated) => {
       return Animated.loop(
         Animated.timing(animated, {
           toValue: 2,
-          duration: animationDuration,
+          duration: animationDuration
         })
       );
     };
@@ -119,9 +102,16 @@ export const SemipolarSpinner = (props: EpicProps): Element<any> => {
 
   return (
     <View style={style} {...restProps}>
-      <View style={spinnerStyle.container}>{generateSpinners()}</View>
+      <View style={spinnerStyle.container}>
+        <GenerateAnimatedViews
+          animatedViewsArray={VIEWS}
+          animatedStyle={animatedStyle}
+          spinnerStyle={spinnerStyle}
+          style={spinnerStyle.ring}
+        />
+      </View>
     </View>
   );
-};
+}
 
 SemipolarSpinner.defaultProps = EpicSpinnersDefaultProps;
