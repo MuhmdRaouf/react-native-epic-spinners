@@ -1,6 +1,10 @@
 # Created by https://www.gitignore.io/api/vim,buck,xcode,macos,fastlane,cocoapods,reactnative,webstorm+all,androidstudio,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=vim,buck,xcode,macos,fastlane,cocoapods,reactnative,webstorm+all,androidstudio,visualstudiocode
 
+### React Native Epic Spinner Example app ###
+Example/
+scripts/
+
 ### Buck ###
 buck-out/
 .buckconfig.local

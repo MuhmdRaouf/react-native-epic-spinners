@@ -32,6 +32,7 @@ export function SemipolarSpinner(props: EpicSpinnersProps): Element<any> {
       borderWidth: containerSize * 0.04,
       borderTopColor: color,
       borderLeftColor: color,
+      borderColor: 'transparent',
       position: 'absolute'
     },
     ring1: {

@@ -37,6 +37,7 @@ export function FingerprintSpinner(props: EpicSpinnersProps): Element<any> {
       borderRadius: containerSize * 0.5,
       borderWidth: containerSize * 0.03,
       borderTopColor: color,
+      borderColor: 'transparent',
       position: 'absolute'
     },
     ring1: {

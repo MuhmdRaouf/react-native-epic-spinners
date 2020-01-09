@@ -11,9 +11,6 @@
 ; Ignore "BUCK" generated dirs
 <PROJECT_ROOT>/\.buckd/
 
-; Ignore "Example" app dirs
-<PROJECT_ROOT>/Example/
-
 ; Ignore polyfills
 <PROJECT_ROOT>/node_modules/react-native/Libraries/polyfills/.*
 

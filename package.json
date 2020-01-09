@@ -1,8 +1,8 @@
 {
   "name": "react-native-epic-spinners",
   "title": "React Native Epic Spinners",
-  "version": "0.1.0",
-  "description": "Reusable react-native components for epic-spinners",
+  "version": "0.0.1",
+  "description": "Reusable React Native's implementation of epic-spinners using built-in Animated",
   "main": "index.js",
   "author": {
     "name": "Mohammed Abdel Raouf",
@@ -10,39 +10,20 @@
     "website": "https://www.raouf.me"
   },
   "scripts": {
-    "test": "jest",
+    "test": "jest --ci --reporters=default --reporters=jest-junit",
     "lint": "eslint . --ext .js,.jsx",
-    "flow": "flow"
+    "lint:fix": "eslint . --ext .js,.jsx --fix",
+    "flow": "flow",
+    "checkers": "npm run lint && npm run flow && npm test"
   },
-  "dependencies": {
-    "react": "16.9.0",
-    "react-native": "0.61.5"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.7.7",
-    "@babel/core": "^7.7.7",
-    "@babel/preset-flow": "^7.7.4",
-    "@babel/runtime": "^7.6.2",
-    "@react-native-community/eslint-config": "^0.0.5",
-    "@testing-library/react-hooks": "^3.2.1",
-    "babel-jest": "^24.9.0",
-    "eslint": "^6.5.1",
-    "eslint-config-prettier": "^6.9.0",
-    "eslint-plugin-flowtype": "^4.5.3",
-    "eslint-plugin-jest": "^23.3.0",
-    "eslint-plugin-prettier": "^3.1.2",
-    "eslint-plugin-react": "^7.17.0",
-    "eslint-plugin-react-native": "^3.8.1",
-    "flow-bin": "^0.115.0",
-    "jest": "^24.9.0",
-    "metro-react-native-babel-preset": "^0.56.0",
-    "prettier": "^1.19.1",
-    "react-native-testing-library": "^1.12.0",
-    "react-test-renderer": "16.9.0"
-  },
+  "homepage": "https://github.com/muhmdraouf/react-native-epic-spinners#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/muhmdraouf/react-native-epic-spinners.git"
+    "url": "git+https://github.com/MuhmdRaouf/react-native-epic-spinners.git",
+    "baseUrl": "https://github.com/MuhmdRaouf/react-native-epic-spinners"
+  },
+  "bugs": {
+    "url": "https://github.com/muhmdraouf/react-native-epic-spinners/issues"
   },
   "keywords": [
     "react-native",
@@ -50,16 +31,66 @@
     "spinners"
   ],
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/muhmdraouf/react-native-epic-spinners/issues"
+  "licenseFilename": "LICENSE",
+  "readmeFilename": "README.md",
+  "peerDependencies": {
+    "react": "^16.8.1",
+    "react-native": ">=0.59.0-rc.0 <1.0.x"
   },
-  "homepage": "https://github.com/muhmdraouf/react-native-epic-spinners#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.7.7",
+    "@babel/core": "^7.7.7",
+    "@babel/preset-flow": "^7.7.4",
+    "@react-native-community/eslint-config": "^0.0.6",
+    "@react-native-community/eslint-plugin": "^1.0.0",
+    "@testing-library/react-hooks": "^3.2.1",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.9.0",
+    "eslint-plugin-flowtype": "^4.5.3",
+    "eslint-plugin-jest": "^23.3.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-react": "^7.17.0",
+    "eslint-plugin-react-native": "^3.8.1",
+    "flow-bin": "^0.115.0",
+    "flow-typed": "^2.6.2",
+    "husky": "^4.0.3",
+    "jest": "^24.9.0",
+    "jest-junit": "^10.0.0",
+    "prettier": "^1.19.1",
+    "react": "^16.8.3",
+    "react-native": "^0.59.10",
+    "react-native-testing-library": "^1.12.0",
+    "react-test-renderer": "^16.12.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run checkers",
+      "pre-push": "npm run checkers"
+    }
+  },
   "jest": {
     "preset": "react-native",
     "verbose": true,
     "timers": "fake",
+    "reporters": [
+      "default",
+      "jest-junit"
+    ],
     "setupFiles": [
       "<rootDir>/jestSetupFile.js"
+    ],
+    "modulePathIgnorePatterns": [
+      "Example"
     ]
+  },
+  "jest-junit": {
+    "suiteName": "jest tests",
+    "outputDirectory": "test-results/jest/",
+    "outputName": "junit.xml",
+    "uniqueOutputName": "false",
+    "classNameTemplate": "{classname}-{title}",
+    "titleTemplate": "{classname}-{title}",
+    "ancestorSeparator": " › ",
+    "usePathForSuiteName": "true"
   }
 }

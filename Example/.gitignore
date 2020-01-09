@@ -532,7 +532,4 @@ hs_err_pid*
 
 !/gradle/wrapper/gradle-wrapper.jar
 
-### jest-junit ###
-test-results/jest/*.xml
-
 # End of https://www.gitignore.io/api/vim,buck,xcode,macos,fastlane,cocoapods,reactnative,webstorm+all,androidstudio,visualstudiocode
