@@ -1,0 +1,37 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:12.14.0
+    working_directory: ~/code
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "yarn.lock" }}
+            - v1-dependencies-
+      - run:
+          name: Install Packages
+          command: yarn install
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: Lint
+          command: yarn run lint
+      - run:
+          name: Flow
+          command: yarn run flow
+      - run:
+          name: Tests
+          command: yarn test
+      - store_artifacts:
+          path: test-results
+      - store_test_results:
+          path: test-results
+workflows:
+  version: 2
+  workflow:
+    jobs:
+      - build
